@@ -1,20 +1,20 @@
 <?php
 
+//Starting user session
 session_start();
 
-//Start MySQLi connection
+//Starting mysql connection
 require('../connection.php');
 
-//Requesting pet id from query
+//Setting var/pet id retrieved from url
 $petid = strip_tags($_REQUEST['petid']);
-
 
 //request uri
 $uri = explode("=", $_SERVER['REQUEST_URI']);
 
 
 //Retrieving owners uid to use in following query / retrieving details from row to display on webview
-$owner = "SELECT uid, name, age, image, description, gender FROM pets WHERE pid = ?";
+$owner = "SELECT * FROM pets WHERE pid = ?";
 $stmt = $conn->prepare($owner);
 $stmt->bind_param('s', $uri[1]);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -25,6 +25,7 @@ if($stmt->execute()){$result = $stmt->get_result();
 					 $image = $fetch['image'];
 					 $description = $fetch['description'];
 					 $gender = $fetch['gender'];
+					 $status = $fetch['status'];
 					}
 
 $stmt->close();
@@ -59,6 +60,23 @@ $stmt->close();
 }
 
 
+//Site settings config ID
+$configid = "1";
+
+//Query for site settings / website title and transferring phone number
+$settings_sql = "SELECT website_title, xfn FROM site_settings WHERE id = ?";
+$stmt = $conn->prepare($settings_sql);
+$stmt->bind_param('s', $configid);
+if($stmt->execute()){$result = $stmt->get_result();
+					$array = $result->fetch_assoc();
+					 $website_title = $array['website_title'];
+					 $xfn = $array['xfn'];
+					 
+					}
+$stmt->close();
+
+
+
 ?>
 
 <!doctype html>
@@ -66,10 +84,10 @@ $stmt->close();
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
-<title>Lost Pet Connect</title>
+<title><?php echo $website_title; ?> - Lost Pet Connect</title>
 <style type="text/css">
 body,td,th {
-	font-family: Tahoma;
+	font-family: Arial;
 }
 body {
 	margin-left: 0px;
@@ -91,92 +109,89 @@ a:active {
 </style>
 </head>
 
-<body>
-	
-	<table width="500" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="red">
+<body><center>
+	<?php
+	if($status == "2"){echo "
+	<table width='410' border='0' align='center' cellpadding='0' cellspacing='0' bgcolor='red'>
   <tbody>
     <tr>
-	  <td align="center"><font color="#ffffff">This pet has been marked as lost by owners!</font></td>
+	  <td align='center'><font color='#ffffff'>This pet has been marked as lost by owners!</font></td>
     </tr>
   </tbody>
-</table
-
-	<table width="500" border="1" bordercolor="lightgray" align="center" cellpadding="0" cellspacing="0">
+</table";
+					  }
+?>
+	</center>
+	<table width="410" border="1" bordercolor="lightgray" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
       <td>
 		
-		<table width="500" align="center" cellpadding="0" cellspacing="0">
+		<table width="410" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
-      <td align="center">&nbsp;
-		
-
-		
-		</td>
+      <td align="center">&nbsp;</td>
     </tr>
     <tr>
       <td align="center">
 		
-		<table width="500" border="0" cellspacing="0" cellpadding="0">
+		<table width="410" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td>&nbsp;</td>
       <td align="center">
-		
-		<table width="300" border="0" cellspacing="0" cellpadding="0">
-  <tbody>
-    <tr>
-      <td width="149" align="center">
+        
+        <table width="300" border="0" cellspacing="0" cellpadding="0">
+          <tbody>
+            <tr>
+              <td width="149" align="center">
+                
+                
+                <img src="../<?php echo $image; ?>" width="120" height="120">
+                </td>
+              <td width="150" valign="top">
+                <table width="150" border="0" cellspacing="0" cellpadding="0">
+                  <tbody>
+                    <tr>
+                      <td><strong>Name</strong></td>
+                      </tr>
+                    <tr>
+                      <td><?php echo $petname . "&nbsp;<small>($gender)</small>"; ?></td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td><strong>Age</strong></td>
+                      </tr>
+                    <tr>
+                      <td><?php echo "$petage years"; ?></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                
+                
+                
+                </td>
+              </tr>
+            </tbody>
+          </table>
         
         
-        <img src="../<?php echo $image; ?>" width="120" height="120">
-       </td>
-      <td width="150" valign="top">
-	<table width="150" border="0" cellspacing="0" cellpadding="0">
-  <tbody>
+        
+        
+      </td>
+      </tr>
     <tr>
-      <td><strong>Name</strong></td>
-    </tr>
-    <tr>
-      <td><?php echo $petname . "&nbsp;<small>($gender)</small>"; ?></td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td><strong>Age</strong></td>
-    </tr>
-    <tr>
-      <td><?php echo "$petage years"; ?></td>
-    </tr>
-  </tbody>
-</table>
-
+      <td>
 		
-		
-		</td>
-    </tr>
-    </tbody>
-</table>
-
-		
-		
-		
-		</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td colspan="3">
-		
-		<table width="500" border="0" align="center" cellpadding="0" cellspacing="0">
+		<table width="410" border="0" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
       <td width="87">&nbsp;</td>
-      <td width="123">&nbsp;</td>
-      <td width="266" align="center">&nbsp;</td>
-      <td width="161">&nbsp;</td>
-      <td width="63">&nbsp;</td>
+      <td width="55">&nbsp;</td>
+      <td width="100" align="center">&nbsp;</td>
+      <td width="100">&nbsp;</td>
+      <td width="55">&nbsp;</td>
     </tr>
     <tr>
       <td>&nbsp;</td>
@@ -204,7 +219,7 @@ a:active {
       <td align="center">
 		  
 		
-		  <table width="500" border="0" cellspacing="0" cellpadding="1" background="../images/tab_bg.png">
+		  <table width="410" border="0" cellspacing="0" cellpadding="1" background="../images/tab_bg.png">
         <tbody>
           <tr>
 			  <td background="../images/top.png" style="background-repeat: no-repeat"><font color="#ffffff"><strong>&nbsp;&nbsp;About <?php echo $petname; ?></strong></font></td>
@@ -227,17 +242,17 @@ a:active {
     <tr>
       <td align="center">
         
-        <table width="500" border="0" cellspacing="0" cellpadding="0">
+        <table width="400" border="0" cellspacing="0" cellpadding="0">
           <tbody>
             <tr>
-              <td width="50%">
+              <td width="200">
                 
-                <table width="250" border="1" bordercolor="#000000" cellspacing="0" cellpadding="0">
+                <table width="200" border="1" bordercolor="#000000" cellspacing="0" cellpadding="0">
                   <tbody>
                     <tr>
                       <td>
                         
-                        <table width="250" border="0" cellspacing="0" cellpadding="0">
+                        <table width="200" border="0" cellspacing="0" cellpadding="0">
                           <tbody>
                             <tr>
                               <td bgcolor="#000fff"><font color="#ffffff">Owner information</font></td>
@@ -270,26 +285,21 @@ a:active {
                       </tr>
                     </tbody>
                   </table>
+ </td>
+              <td width="200" valign="top">
                 
-                
-                
-                
-                </td>
-              <td width="50%" valign="top">
-                
-                <table width="250" border="1" bordercolor="#000000" cellspacing="0" cellpadding="0">
+                <table width="200" border="1" bordercolor="#000000" cellspacing="0" cellpadding="0">
                   <tbody>
                     <tr>
                       <td>
                         
-                        <table width="250" border="0" cellspacing="0" cellpadding="0">
+                        <table width="200" border="0" cellspacing="0" cellpadding="0">
                           <tbody>
                             <tr>
                               <td width="15" bgcolor="green">&nbsp;</td>
                               <td width="8" bgcolor="green">&nbsp;</td>
                               <td colspan="4" align="center" bgcolor="green"><font color="#ffffff">Contact</font></td>
                               <td width="14" bgcolor="green">&nbsp;</td>
-                              <td width="23" bgcolor="green">&nbsp;</td>
                               </tr>
                             <tr>
                               <td>&nbsp;</td>
@@ -298,27 +308,22 @@ a:active {
                               <td width="8">&nbsp;</td>
                               <td width="86" align="center">Text</td>
                               <td>&nbsp;</td>
-                              <td>&nbsp;</td>
                               </tr>
                             <tr>
                               <td>&nbsp;</td>
-                              <td colspan="3" rowspan="4" align="center"><a href="tel:+19374539293"><img src="../images/call.png"></a></td>
+                              <td colspan="3" rowspan="4" align="center"><a href="tel:+<?php echo $xfn; ?>"><img src="../images/call.png"></a></td>
                               <td>&nbsp;</td>
-                              <td colspan="2" rowspan="4" align="center"><a href="sms:+19374539293?body=Your+pet+has+been+found:+<?php echo $uri[1];?><!>DoNotEditThisMsg<!>"><img src="../images/text.png"></a></td>
-                              <td>&nbsp;</td>
+                              <td colspan="2" rowspan="4" align="center"><a href="sms:+<?php echo $xfn; ?>?body=Your+pet+has+been+found:+<?php echo $uri[1];?><!>DoNotEditThisMsg<!>"><img src="../images/text.png"></a></td>
                               </tr>
                             <tr>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              </tr>
-                            <tr>
-                              <td>&nbsp;</td>
                               <td>&nbsp;</td>
                               <td>&nbsp;</td>
                               </tr>
                             <tr>
                               <td>&nbsp;</td>
+                              <td>&nbsp;</td>
+                              </tr>
+                            <tr>
                               <td>&nbsp;</td>
                               <td>&nbsp;</td>
                               </tr>
@@ -330,10 +335,8 @@ a:active {
                               <td>&nbsp;</td>
                               <td>&nbsp;</td>
                               <td>&nbsp;</td>
-                              <td>&nbsp;</td>
                               </tr>
                             <tr>
-                              <td>&nbsp;</td>
                               <td>&nbsp;</td>
                               <td>&nbsp;</td>
                               <td>&nbsp;</td>
@@ -353,16 +356,11 @@ a:active {
               </tr>
             </tbody>
           </table>
-        
-        
-        
-        
-        </td>
+ </td>
     </tr>
     </tbody>
 </table>
-
-	<table width="500" border="0" align="center" cellpadding="0" cellspacing="0">
+	<table width="410" border="0" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
       <td>&nbsp;</td>

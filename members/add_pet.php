@@ -7,12 +7,31 @@ require('../connection.php');
 session_start();
 
 
+//Site settings config ID
+$configid = "1";
+
+//Query for site settings
+$settings_sql = "SELECT website_title, domain, photo_dir, qr_dir FROM site_settings WHERE id = ?";
+$stmt = $conn->prepare($settings_sql);
+$stmt->bind_param('s', $configid);
+if($stmt->execute()){$result = $stmt->get_result();
+					$array = $result->fetch_assoc();
+					 $website_title = $array['website_title'];
+					 $domain = $array['domain'];
+					 $photo_dir = $array['photo_dir'];
+					 $qr_dir = $array['qr_dir'];
+					}
+$stmt->close();
+
+
+
+
 
 //Redirecting to login if user isn't logged in
-if($_SESSION['uid'] == ""){header("location: index.php");}
+if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 
 //Key is set in form to allow for input fields to be submitted / prevents unnecessary submissions
-if(strip_tags($_POST['key'] == "aap")){
+if(isset($_POST['key'])){
 	//
 if(strip_tags($_POST['petid'] == "")){
 
@@ -24,38 +43,37 @@ if(strip_tags($_POST['petid'] == "")){
 	$description = strip_tags($_POST['description']);
 	
 	//Default pet image until user uploads own
-	$default_image = "images/images/default_pic.png";
+	$default_image = $photo_dir."default_pic.png";
 	
 	//Generating petid
 	$pid = substr(str_shuffle(md5(date('his'))), 0, 8);
 
+	//Setting var to keep columbs empty until
+	$blank = "";
 	
 	//Inserting new pet details in table
-	$update = "INSERT INTO pets (pid, uid, name, age, description, image, gender) VALUES (?, ?, ?, ?, ?, ?, ?)";
+	$update = "INSERT INTO pets (pid, uid, name, age, description, image, gender, status, status_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	$stmt = $conn->prepare($update);
-	$stmt->bind_param('sssssss', $pid, $_SESSION['uid'], $name, $age, $description, $default_image, $gender);
+	$stmt->bind_param('sssssssss', $pid, $_SESSION['uid'], $name, $age, $description, $default_image, $gender, $blank, $blank);
 	if($stmt->execute()){
 		//Holds success message for successful adding of pet to table
 		$_SESSION['createstatus'] = "<font color='green'>$name was added to your pets</font>";
 						 
 						
-						
-						
-	//Directory QR codes are stored to
-	$dir = "../images/qr/";
-						 
+											 
 	//Filename of QR code
 	$filename = $pid."-qr.png";
 						 
 						 
 	//Domain or IP that hosts the webpage
-	$domain = "http://13.59.192.46";
 						 
 	//Call to Google Developers to generate QR code
 	$data = file_get_contents('https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.$domain."/view/petid=".$pid);
 						 
     //Storing QR code
-	file_put_contents($dir.$filename, $data);
+	file_put_contents("../".$qr_dir.$filename, $data);
+		
+		$_SESSION['scstatus'] = "<font color='green'><strong>Pet was successfully added to My Pets.</strong></font>";
 						
 		//Redirecting to 'manage pets' after successful addition of pet to table
 	header("location: manage_pet.php?petid=$pid");
@@ -64,7 +82,7 @@ if(strip_tags($_POST['petid'] == "")){
 }
 }elseif(
 	//Allows for pet details to be edited if pet already exists
-	strip_tags($_POST['petid'] != "")){
+	isset($_POST['petid'])){
 	
 	$currentid = strip_tags($_POST['petid']);
 	
@@ -150,13 +168,13 @@ a:active {
 		
 		  <?php
 		  //Displayed on successful update
-		  if($_SESSION['createstatus'] != ""){
-			  /
+		  if(isset($_SESSION['createstatus'])){
 			  echo $_SESSION['createstatus'];
-											  //Unsetting update success message
-											   unset($_SESSION['createstatus']);
-											  
-											 }
+			  unset($_SESSION['createstatus']);
+		  }
+	
+		  
+		  if(isset($_SESSION['inavlidfile'])){echo $_SESSION['invalidfile']; unset($_SESSION['invalidfile']);}
   ?>
 		
 		</td>
@@ -195,14 +213,13 @@ a:active {
       <td width="180" rowspan="5" align="center">
 		  <?php
 		  //Displays photo of pet if exists
-		  if($_SESSION['imgplc'] != ""){echo "<img src='$_SESSION[imgplc]'>";
+		  if(isset($_SESSION['imgplc'])){echo "<img src='$_SESSION[imgplc]'>";
 									   unset($_SESSION['imgplc']);
 									   
 									   }else{
 			  
 			  //Displays default image if user photo doesn't exist
-			  echo '
-		  <img src="../images/images/default_pic.png" width="150" height="150">';}
+			  echo "<img src='../$photo_dir/default_pic.png' width='150' height='150'>";}
 		  ?>
 			  </td>
       <td width="313">&nbsp;</td>
@@ -275,8 +292,8 @@ a:active {
       <td>
 		  
 		<select name="gender">
-			<option value="male">Male</option>
-			<option value="female">Female</option>
+			<option value="Male">Male</option>
+			<option value="Female">Female</option>
 			</select>
 		
 		</td>
@@ -367,7 +384,11 @@ a:active {
       <td><input type="hidden" name="petid" value="<?php
 		  
 		  //Used to pass pet id to update pet details on submission
-		  echo $_SESSION['pid']; unset($_SESSION['pid']); ?>"></td>
+		  
+		  if(isset($_SESSION['pid'])){
+		  echo $_SESSION['pid']; unset($_SESSION['pid']);
+		  }
+		  ?>"></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>

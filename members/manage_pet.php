@@ -1,68 +1,83 @@
 <?php
 
-//Start mysqli connection
+//Starting MySQL connection
 require('../connection.php');
 
-//Start user session
+//Starting user session
 session_start();
 
 //Directing to login if not logged in
-if($_SESSION['uid'] == ""){header("location: index.php");}
+if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 
 
 //Requesting petid from pet list page and or from form manage pets hidden input 
 $petid = strip_tags($_REQUEST['petid']);
 
 //Checking if submission is from form
-if($_POST['form'] == "formdata"){
+if(isset($_POST['formref'])){$key = "mp";}else{$key = "unset";}
+if($key == "mp"){
 
 	//Posting / sanitizing input fields of pet details
     $nameupdate = strip_tags($_POST['name']);
 	$ageupdate = strip_tags($_POST['age']);
 	$genderupdate = strip_tags($_POST['gender']);
 	$descriptionupdate = strip_tags($_POST['description']);
-
+	$statusupdate = strip_tags($_POST['status']);
+	
+	if($statusupdate == "1"){$status_date = "";}else{$status_date = date('m.d.y');}
+	
 //Checking for empty pet details fields
 	if(empty($nameupdate) || empty($ageupdate) || empty($genderupdate) || empty($descriptionupdate)){
 		
 		
 		//Setting var holding error fields error
-		$_SESSION['emptydetails'] = "Empty fields are not allowed.";
+		$_SESSION['emptydetails'] = "<font color='#ff0000'><strong>Empty fields are not allowed.</strong></font>";
 		
 		//Redirecting to manage pets page if fields are blank
 		header("manage_pet.php");}
 	
 	//Updating pet details
-	$update = "UPDATE pets SET name = ?, age = ?, description = ?, gender = ? WHERE pid = ? AND uid = ?";
+	$update = "UPDATE pets SET name = ?, age = ?, description = ?, gender = ?, status = ?, status_date = ? WHERE pid = ? AND uid = ?";
 	$stmt = $conn->prepare($update);
-	$stmt->bind_param('ssssss', $nameupdate, $ageupdate, $descriptionupdate, $genderupdate, $petid, $_SESSION['uid']);
-	if($stmt->execute()){$_SESSION['updatestatus'] = "<Font color='green'>Pet information has been updated</font>";}else{$_SESSION['updatestatus'] = "<font color='red'>something went wrong</font>";}
+	$stmt->bind_param('ssssssss', $nameupdate, $ageupdate, $descriptionupdate, $genderupdate, $statusupdate, $status_date, $petid, $_SESSION['uid']);
+	if($stmt->execute()){$_SESSION['updatestatus'] = "<font color='green'><strong>Pet information has been updated.</strong></font>";}else{$_SESSION['updatestatus'] = "<font color='red'>something went wrong</font>";}
     $stmt->close();
 	
-	//Adding header to prevent blank info
-	//header("location: manage_pet.php?petid=$petid");
-	//exit;
+
 }
 
-
-//requesting pet details
+//SQL query for pet details
 $request = "SELECT * FROM pets WHERE pid = ? AND uid = ?";
 $stmt = $conn->prepare($request);
 $stmt->bind_param('ss', $petid, $_SESSION['uid']);
 if($stmt->execute()){$result = $stmt->get_result();
 					$data = $result->fetch_assoc();
 				
-					 //Turning pet details into separate variables
+					 //Setting vars for each pet detail
 					 $name = $data['name'];
 					 $gender = $data['gender'];
 					 $age = $data['age'];
 					 $description = $data['description'];
 					 $image = $data['image'];
+					 $status = $data['status'];
+					 $status_date = $data['status_date'];
 					}
 $stmt->close();
 
 
+//Site settings config ID
+$configid = "1";
 
+//Query for site settings / title
+$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$stmt = $conn->prepare($settings_sql);
+$stmt->bind_param('s', $configid);
+if($stmt->execute()){$result = $stmt->get_result();
+					$array = $result->fetch_assoc();
+					 $website_title = $array['website_title'];
+					 
+					}
+$stmt->close();
 
 
 
@@ -72,7 +87,7 @@ $stmt->close();
 <html>
 <head>
 <meta charset="utf-8">
-<title>Lost Pet Connect - Manage Pet</title>
+<title><?php echo $website_title; ?> - Manage Pet</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -123,29 +138,40 @@ a:active {
 		
 		  <?php
 		  //Displaying and unsetting if update of information
-		  if($_SESSION['updatestatus'] != ""){echo $_SESSION['updatestatus'];
+		  if(isset($_SESSION['updatestatus'])){echo $_SESSION['updatestatus'];
 											  
 											   unset($_SESSION['updatestatus']);
 											  
 											 }
 		  //Upload status message / photo update
-		  if($_SESSION['uploadstatus'] != ""){echo $_SESSION['uploadstatus'];
+		  if(isset($_SESSION['uploadstatus'])){echo $_SESSION['uploadstatus'];
 											  //Unsetting error message
 											   unset($_SESSION['uploadstatus']);
 											  
 											 }
 		  //Empty fields status message / pet details update
-		 if($_SESSION['emptydetails'] != ""){echo $_SESSION['emptydetails'];
+		 if(isset($_SESSION['emptydetails'])){echo $_SESSION['emptydetails'];
 											
 											//Unsetting error message
 											 unset($_SESSION['emptydetails']);
 											}
-											  
-											 
 		  
-		  ?>
+		  //Empty upload status message
+		  	 if(isset($_SESSION['nofile'])){echo $_SESSION['nofile'];
+											
+											//Unsetting error message
+											 unset($_SESSION['nofile']);
+											}
+		  
+		  if(isset($_SESSION['invalidfile'])){echo $_SESSION['invalidfile']; unset($_SESSION['invalidfile']);}
+		  						?>
 		
 		</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td height="18">&nbsp;</td>
+      <td align="center">&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -181,7 +207,7 @@ a:active {
 	  <td align="center">&nbsp;</td>
 	  <td align="center">QR Code</td>
 	  </tr>
-    <tr>      <td width="180" rowspan="5" align="center"><img src="../<?php echo $image; ?>" width="150" height="150"></td>
+    <tr>      <td width="180" rowspan="5" align="center"><img src="../<?php echo $image; ?>" width="150" height="150" border="1"></td>
       <td width="255">&nbsp;</td>
       <td width="165" align="center"><small><a href="#">Print</a></small></td>
     </tr>
@@ -254,9 +280,9 @@ a:active {
       <td>
 		  
 		<select name="gender">
-		  <option value="default"><?php echo $gender; ?></option>
-			<option value="male">Male</option>
-			<option value="female">Female</option>
+		  <option value="<?php echo $gender; ?>"><?php echo $gender; ?></option>
+			<option value="<?php if($gender == "Male"){echo "Female";}else{echo "Male";}?>"><?php if($gender == "Female"){echo "Male";}else{echo "Female";}?></option>
+			
 			</select>
 		
 		</td>
@@ -290,6 +316,34 @@ a:active {
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>Missing?</td>
+      <td>&nbsp;</td>
+      <td><select name="status">
+		  <option value="<?php echo $status; ?>">
+			  <?php
+			  if($status == "1"){echo "No";}else{echo "Missing!";}
+			  ?>
+			  </option>
+		  <option value="1">No</option>
+		  <option value="2">Yes</option>
+		  </select></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td> <?php if($status == "2"){echo "Marked as missing on: $status_date";} ?></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
@@ -343,7 +397,7 @@ a:active {
     </tr>
     <tr>
       <td>&nbsp;</td>
-      <td><input type="hidden" name="form" value="formdata"></td>
+      <td><input type="hidden" name="formref" value="mp"></td>
       <td><input type="hidden" name="petid" value="<?php
 		  
 		  //Var used as key to perform update with correct pet

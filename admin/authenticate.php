@@ -1,6 +1,5 @@
 <?php
 
-
 //Start mysqli connection
 require('../connection.php');
 
@@ -13,7 +12,7 @@ $password = sha1(strip_tags($_POST['password']));
 
 
 //Matching login credentials to authenticate user
-$sql = "SELECT * FROM users WHERE email_address = ? AND password = ?";
+$sql = "SELECT * FROM admin WHERE email_address = ? AND password = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('ss', $email_address, $password);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -29,8 +28,8 @@ if ($count == 1){
 			//Starting user session
 session_start();
 	
-	//Setting session var for uid
-	$_SESSION['uid'] = $row['uid'];
+	//Setting session var for id
+	$_SESSION['id'] = $row['id'];
 }
 	  
 		
@@ -40,7 +39,7 @@ header("location: dashboard.php");}else{
 	
 	
 //Setting login error if credentials don't match
-$_SESSION['loginerror']	= "<font color='#ff0000'><strong>Your login credentials do not match an active user.</strong></font>";
+$_SESSION['loginerror']	= "<font color='red'>Your login credentials do not match an active user.</font>";
 
 //Directing to index/login page if unsuccessful
 header("location: index.php");

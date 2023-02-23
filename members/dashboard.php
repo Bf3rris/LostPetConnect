@@ -1,17 +1,18 @@
 <?php
-//Start MySQLi connection
+
+//Starting MySQL connection
 require('../connection.php');
 
-//Starting session
+//Starting user session
 session_start();
 
 
 //Directing to login if not logged in
-if($_SESSION['uid'] == ""){header("location: index.php");}
+if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 
 
 //Retrieve owners personal details
-$retrieve = "SELECT firstname FROM users WHERE uid =?";
+$retrieve = "SELECT firstname FROM users WHERE uid = ?";
 $stmt = $conn->prepare($retrieve);
 $stmt->bind_param('s', $_SESSION['uid']);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -19,13 +20,29 @@ if($stmt->execute()){$result = $stmt->get_result();
 					 $firstname = $data['firstname'];
 					}
 
+
+//Site settings config ID
+$configid = "1";
+
+//Query for site settings / title
+$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$stmt = $conn->prepare($settings_sql);
+$stmt->bind_param('s', $configid);
+if($stmt->execute()){$result = $stmt->get_result();
+					$array = $result->fetch_assoc();
+					 $website_title = $array['website_title'];
+					 
+					}
+$stmt->close();
+
+
 ?>
 
 <!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>Lost Pet Connect - Dashboard</title>
+<title><?php echo $website_title; ?>  - My Dashboard</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -67,7 +84,7 @@ a:active {
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
-      <td align="center"><h2>Lost Pet Connect</h2></td>
+      <td align="center"><h2><?php echo $website_title; ?> </h2></td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -116,12 +133,14 @@ a:active {
 							   $count = $result->num_rows;
 							  }
 		  $stmt->close();
-							   
-							   if($count < 0){echo "You have no pets in the database";}else{echo "You have $count pets in the database";}
-							   
-		  ?>
+							   if($count > 1){$noun = "pets";}else{$noun = "pet";}
+							   if($count < 0){
+								   
+								   echo "You have no $noun in the database";}else{echo "You have $count $noun in the database";}
 		  
-		
+		  ?>
+		  <p>
+		Use the navigation menu on the left to view your available options.
 		
 		
 		</td>
@@ -139,7 +158,7 @@ a:active {
     </tr>
     <tr>
       <td>&nbsp;</td>
-      <td align="center">LPC;</td>
+      <td align="center">&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
   </tbody>

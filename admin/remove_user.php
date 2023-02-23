@@ -1,90 +1,96 @@
 <?php
 
-//Starting MySQL connection
+//Starting mysqli connection
 require('../connection.php');
 
 //Starting user session
 session_start();
 
-if(isset($_SESSION['uid'])){}else{header("location: index.php");}
-
-
-//Site settings config ID
-$configid = "1";
-
-//Query for site settings
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
-$stmt = $conn->prepare($settings_sql);
-$stmt->bind_param('s', $configid);
-if($stmt->execute()){$result = $stmt->get_result();
-					$array = $result->fetch_assoc();
-					 $website_title = $array['website_title'];
-					 $qr_dir = $array['qr_dir'];
-					 
-					}
-$stmt->close();
+//Checking session for logged in status
+if(isset($_SESSION['id'])){}else{header("location: index.php");}
 
 
 //Setting session var with pet id until removal occurs
-if(isset($_SESSION['rmid'])){}else{$_SESSION['rmid'] = strip_tags($_REQUEST['petid']);}
-
-
+if($_SESSION['rmid'] == ""){$_SESSION['rmid'] = strip_tags($_REQUEST['uid']);}
+//if($_SESSION['rmid'] == ""){header("location: dashboard.php");}
 //retrieving photo from db before deletion
-	$imgreq = "SELECT name, image FROM pets WHERE pid = ?";
+	$imgreq = "SELECT firstname, email_address FROM users WHERE uid = ?";
 	$stmt = $conn->prepare($imgreq);
 	$stmt->bind_param('s', $_SESSION['rmid']);
 	if($stmt->execute()){$result = $stmt->get_result();
-						$data = $result->fetch_assoc();
-						 $photo = $data['image'];
-						 $petname = $data['name'];
+						
+						 $email_address = $data['email_address'];
 						}
 	$stmt->close();
 
 
 
 //Setting var to confirm action for pet removal
-if(isset($_POST['confirm'])){$confirm = strip_tags($_POST['confirm']);}else{$confirm = "unset";}
+$confirm = strip_tags($_POST['confirm']);
 
 //Function to confirm removal set b
 if($confirm == "Yes"){
 	
 	
-
+//retrieve pet data before deletion of user data
+	
+	
 	//Removing all pet data
+	
+	
+	
 	//Deleting row associated with pet
-	$remove = "DELETE FROM pets WHERE pid = ? AND uid = ?";
-	$stmt = $conn->prepare($remove);
-	$stmt->bind_param('ss', $_SESSION['rmid'], $_SESSION['uid']);
+	
+	$removeuser = "DELETE FROM users WHERE uid = ?";
+	$stmt = $conn->prepare($removeuser);
+	$stmt->bind_param('s', $_SESSION['rmid']);
+	if($stmt->execute()){
+		
+}else{echo "there was an error deleting user";}
+	$stmt->close();
+	
+	$removepets = "DELETE FROM pets WHERE uid = ?";
+	$stmt = $conn->prepare($removepets);
+	$stmt->bind_param('s', $_SESSION['rmid']);
 	if($stmt->execute()){
 						
 						 //Setting var contaiing status of removal
-						 $_SESSION['removestatus'] = "<font color='green'><strong>Pet has been removed</strong></font>";
-						 
+						 $_SESSION['removestatus'] = "<font color='green'>User has been removed</font>";
 						 
 						 
 						 //Deleting photo of pet from images directory
-						 //Doing nothing if pets image is default image / prevents default image from being erased
-						 if($photo == "images/images/default_pic.png"){}else{unlink("../".$photo);}
+						 //unlink($photo);
 							 
 							 //Deleting pets QR code from QR code directory
-							 unlink("../".$qr_dir.$_SESSION['rmid']."-qr.png");
+							// unlink('../images/qr/'.$_SESSION['rmid']."-qr.png");
 									
 							 //Unsetting petid removal var
-						unset($_SESSION['rmid']);
+						//unset($_SESSION['rmid']);
 		
 						//Redirecting user back to 'my pets' details page
-						 header("location: my_pets.php");
-						 exit;
-						
-						}else{
-		//Displaying error if deletion wasn't completed.
-		echo "There was an error. Return to <a href='my_pets.php'>My pets</a>";}
-$stmt->close();
-	
+	}else{echo "there was an error deleting pet";}
+		$stmt->close();
+		unset($_SESSION['rmid']);
+						 header("location: user_mgmt.php");
 
+						 exit;
+	
+						}else{
+	
 }
 
 
+
+$configid = "1";
+$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$stmt = $conn->prepare($settings_sql);
+$stmt->bind_param('s', $configid);
+if($stmt->execute()){$result = $stmt->get_result();
+					$array = $result->fetch_assoc();
+					 $website_title = $array['website_title'];
+					 
+					}
+$stmt->close();
 
 ?>
 
@@ -141,7 +147,7 @@ a:active {
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
-      <td align="center"><h3>Manage Pet / Remove Pet</h3>
+      <td align="center"><h3>Manage Users / Remove Users</h3>
 		
 		
 		</td>
@@ -165,17 +171,20 @@ a:active {
 	  
 	  
 	  <tr>
-	  <td>This will remove your pet from your account and delete all data associated with <strong><i><?php echo $petname; ?></i></strong> including their photo and QR Code.</td>
+	 <td>This will remove all data and pet data associated with the user you are interacting with <strong><i><?php echo $email_address; ?></i></strong></td>
 	  </tr>
     <tr>
       <td align="center">
 		  
-		 <table width="400" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
+		  <!------------Start of confirmation form ------------>
+		
+		  <table width="450" border="1" bordercolor="lightgray" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
-      <td> <!------------Start of confirmation form ------------>
-		<form action="remove_pet.php" method="post">
-		<table width="400" border="0" cellspacing="0" cellpadding="0">
+      <td align="center">
+		
+		  <form action="remove_user.php" method="post">
+		<table width="450" border="0" cellspacing="0" cellpadding="0">
   <tbody>
 	  <tr>      
 	    <td colspan="6">&nbsp;</td>
@@ -184,10 +193,10 @@ a:active {
       <td colspan="6" align="center"><h2>Continue?</h2></td>
       </tr>
     <tr>
-      <td width="29"><input type="hidden" name="complete" value="<?php if(isset($petid)){echo $petid;} ?>"></td>
-      <td width="124" align="center"><input type="hidden" name="petid" value="<?php if(isset($petid)){echo $petid;}?>"></td>
+      <td width="29"><input type="hidden" name="complete" value="<?php echo $_SESSION['rmid']; ?>"></td>
+      <td width="124" align="center"><input type="hidden" name="uid" value="<?php echo $_SESSION['rmid']; ?>"></td>
       <td width="134" align="center"><input type="submit" name="confirm" value="Yes"></td>
-		<td width="135" align="center"><a href="my_pets.php"><input type="button" value="Cancel"></a></td>
+		<td width="135" align="center"><a href="user_mgmt.php"><input type="button" value="Cancel"></a></td>
       <td width="149">&nbsp;</td>
       <td width="29">&nbsp;</td>
       </tr>
@@ -200,12 +209,14 @@ a:active {
   </tbody>
 </table>
 			  </form>
-		<!------------End of confirmation form ------------></td>
+		
+		</td>
     </tr>
   </tbody>
 </table>
 
-		
+		  
+		<!------------End of confirmation form ------------>
 		</td>
     </tr>
   </tbody>

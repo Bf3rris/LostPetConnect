@@ -6,14 +6,22 @@ require('../connection.php');
 //Starting user session
 session_start();
 
+
 //Directing to login if not logged in
-if(isset($_SESSION['uid'])){}else{header("location: index.php");}
+if(isset($_SESSION['id'])){}else{header("location: index.php");}
 
 
-//Site settings config ID
+//Retrieve admin users basic personal details
+$retrieve = "SELECT first_name FROM admin WHERE id =?";
+$stmt = $conn->prepare($retrieve);
+$stmt->bind_param('s', $_SESSION['id']);
+if($stmt->execute()){$result = $stmt->get_result();
+					$data = $result->fetch_assoc();
+					 $firstname = $data['first_name'];
+					}
+$stmt->close();
+
 $configid = "1";
-
-//Query for site settings / title
 $settings_sql = "SELECT * FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
@@ -22,11 +30,6 @@ if($stmt->execute()){$result = $stmt->get_result();
 					 $website_title = $array['website_title'];
 					 
 					}
-$stmt->close();
-
-//Site settings config ID
-$configid = "1";
-
 
 
 ?>
@@ -35,7 +38,7 @@ $configid = "1";
 <html>
 <head>
 <meta charset="utf-8">
-<title><?php echo $website_title; ?>  - My Pets</title>
+<title><?php echo $website_title; ?> - Dashboard</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -82,24 +85,7 @@ a:active {
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
-      <td align="center">
-		
-		<?php
-		  
-		  //Displaying status if pet was removed / set from 'remove pet' selection
-		  if(isset($_SESSION['removestatus'])){echo $_SESSION['removestatus'];
-												  //Unsetting pet removed message
-												  unset($_SESSION['removestatus']);
-												  } 
-		  //Displayed if pet has been added to database
-		    if(isset($_SESSION['createstatus'])){echo $_SESSION['createstatus'];
-												  //Unsetting successful pet addition message
-												  unset($_SESSION['createstatus']);
-												  }
-		  
-		  ?>
-		
-		</td>
+      <td align="center"><h3>Admin Dashboard</h3></td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -115,22 +101,28 @@ a:active {
 		<table width="500" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="113"><h2>My Pets</h2></td>
-      <td width="291">&nbsp;</td>
-      <td width="96" align="center"><a href="add_pet.php">+ Add Pet</a></td>
+      <td width="250"><h2>Welcome,
+		  <?php
+		  
+		  //Greeting owner by firstname
+		  echo $firstname;
+		  
+		  ?>
+		  </h2></td>
+      <td width="118">&nbsp;</td>
+      <td width="132" align="center"><?php echo date('m.d.y'); ?></td>
     </tr>
     <tr>
       <td colspan="3"><hr width="100%" color="lightgray"></td>
-    </tr>
-	  <tr>
-	  <td colspan="3">Select a pet to view or manage details.</td>
-	  </tr>
+      </tr>
     <tr>
-      <td colspan="3" align="left">
+      <td colspan="3">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="3">
 		
-		 <!---------------iframe containg list of pets---------------->
-		<iframe src="pet_list.php" width="350" height="500" frameborder="0"></iframe>
-		  
+Use the navigation menu on the left to access the available administrative functions.
+		 
 		
 		
 		

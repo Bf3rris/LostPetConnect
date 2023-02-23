@@ -1,20 +1,19 @@
 <?php
-
-//Start mysqli connection
+//Start MySQLi connection
 require('../connection.php');
 
-//Starting user session
+//Starting admin session
 session_start();
 
+
 //Directing to login if not logged in
-if(isset($_SESSION['uid'])){}else{header("location: index.php");}
+if(isset($_SESSION['id'])){}else{header("location: index.php");}
 
-
-//Site settings config ID
+//Site settings id
 $configid = "1";
 
-//Query for site settings / title
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+//Retrieving website title
+$settings_sql = "SELECT website_title FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -24,9 +23,6 @@ if($stmt->execute()){$result = $stmt->get_result();
 					}
 $stmt->close();
 
-//Site settings config ID
-$configid = "1";
-
 
 
 ?>
@@ -35,7 +31,7 @@ $configid = "1";
 <html>
 <head>
 <meta charset="utf-8">
-<title><?php echo $website_title; ?>  - My Pets</title>
+<title><?php echo $website_title; ?> - User Management</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -82,24 +78,7 @@ a:active {
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
-      <td align="center">
-		
-		<?php
-		  
-		  //Displaying status if pet was removed / set from 'remove pet' selection
-		  if(isset($_SESSION['removestatus'])){echo $_SESSION['removestatus'];
-												  //Unsetting pet removed message
-												  unset($_SESSION['removestatus']);
-												  } 
-		  //Displayed if pet has been added to database
-		    if(isset($_SESSION['createstatus'])){echo $_SESSION['createstatus'];
-												  //Unsetting successful pet addition message
-												  unset($_SESSION['createstatus']);
-												  }
-		  
-		  ?>
-		
-		</td>
+      <td align="center">&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -115,23 +94,63 @@ a:active {
 		<table width="500" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="113"><h2>My Pets</h2></td>
-      <td width="291">&nbsp;</td>
-      <td width="96" align="center"><a href="add_pet.php">+ Add Pet</a></td>
+      <td width="325"><h2>User Management</h2></td>
+      <td width="175">&nbsp;</td>
     </tr>
     <tr>
-      <td colspan="3"><hr width="100%" color="lightgray"></td>
+      <td colspan="2"><hr width="100%" color="lightgray"></td>
+    </tr>
+    <tr>
+      <td colspan="2">Manage your users. Select a user to view or modify an account.</td>
+    </tr>
+    <tr>
+      <td colspan="2">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2">&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+
+		<table width="500" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td>
+		
+		
+	  <?php 
+	  
+	  $list = "SELECT uid, firstname, lastname FROM users";
+	  $stmt = $conn->prepare($list);
+	  if($stmt->execute()){$result = $stmt->get_result();
+						   $user_count = $result->num_rows;
+						   
+						   if($user_count == 0){echo "
+						   
+						   <center>
+						   There are no users to display
+						   </center>
+						   ";}else{
+						 while($data = $result->fetch_assoc()){
+						  
+						  
+	  echo "
+	  <table width='500' border='0' cellspacing='1' cellpadding='1'>
+  <tbody>
+	<tr>
+      <td width='64'>&nbsp;</td>
+      <td width='436'>Name</td>
+      <td width='200'>View</td>
     </tr>
 	  <tr>
-	  <td colspan="3">Select a pet to view or manage details.</td>
-	  </tr>
-    <tr>
-      <td colspan="3" align="left">
-		
-		 <!---------------iframe containg list of pets---------------->
-		<iframe src="pet_list.php" width="350" height="500" frameborder="0"></iframe>
-		  
-		
+      <td>&bull;</td>
+      <td>$data[lastname], $data[firstname]</td>
+      <td><a href='user_view.php?uid=$data[uid]'>View User</td>
+    </tr>";}}
+						  }
+		  ?>
+  </tbody>
+</table>
 		
 		
 		</td>
@@ -139,7 +158,7 @@ a:active {
   </tbody>
 </table>
 
-		
+
 		
 		</td>
       <td height="61">&nbsp;</td>

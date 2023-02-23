@@ -1,15 +1,14 @@
 <?php
+
 require('../connection.php');
+
 session_start();
 
 
-//Site settings config ID
 $configid = "1";
-
-//Query for site settings / title
 $settings_sql = "SELECT * FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
-$stmt->bind_param('i', $configid);
+$stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
 					 $website_title = $array['website_title'];
@@ -17,13 +16,13 @@ if($stmt->execute()){$result = $stmt->get_result();
 					}
 $stmt->close();
 
-?>
 
+?>
 <!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
-<title><?php echo $website_title; ?> - Owner Login</title>
+<title><?php echo $website_title; ?> - Admin Login</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -61,8 +60,8 @@ a:active {
   <tbody>
     <tr>
       <td width="150" height="50">&nbsp;</td>
-      <td width="400" align="center"><h2><?php echo $website_title; ?> </h2>
-		<h3>Owner Login </h3></td>
+      <td width="400" align="center"><h2>Lost Pet Connect</h2>
+		<h3>Admin Login </h3></td>
       <td width="150">&nbsp;</td>
     </tr>
     <tr>
@@ -73,11 +72,6 @@ a:active {
 		  echo $_SESSION['loginerror'];
 		  unset($_SESSION['loginerror']);
 			 }
-		  
-		  if(isset($_SESSION['passwordstatus'])){
-		  echo $_SESSION['passwordstatus'];
-		  unset($_SESSION['passwordstatus']);
-		  }
 		  
 		  ?>
 		  
@@ -161,10 +155,7 @@ a:active {
     </tr>
   </tbody>
 </table>
-<center>
-	
-	<a href="forgot_password.php">Forgot password?</a>
-	</center>
+
 
 	
 	

@@ -1,21 +1,3 @@
-<style type="text/css">
-body,td,th {
-	font-family: Arial;
-}
-a:link {
-	text-decoration: none;
-}
-a:visited {
-	text-decoration: none;
-}
-a:hover {
-	text-decoration: underline;
-}
-a:active {
-	text-decoration: none;
-}
-</style>
-
 <?php  
 
 //Starting mysqli connection
@@ -26,7 +8,7 @@ require('../connection.php');
 
 
 //Directing to login if not logged in
-if($_SESSION['uid'] == ""){header("location: index.php");}
+if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 
 		 
 		  //Retrieving list of pets / selecting name and identifier
@@ -76,3 +58,23 @@ if($_SESSION['uid'] == ""){header("location: index.php");}
 							  }
 }
 		  ?>
+
+
+
+<style type="text/css">
+body,td,th {
+	font-family: Arial;
+}
+a:link {
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+a:active {
+	text-decoration: none;
+}
+</style>

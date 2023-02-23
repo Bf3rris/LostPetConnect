@@ -1,20 +1,23 @@
 <?php
 
-//Start mysqli connection
+//Starting mysql connection
 require('../connection.php');
 
-//Start user session
+//Starting user session
 session_start();
 
-//Directing to login if not logged in
-if(isset($_SESSION['uid'])){}else{header("location: index.php");}
+	//Checking session for logged in status
+	if(isset($_SESSION['id'])){}else{header("location: index.php");}
 
 
-if(isset($_POST['data'])){$key = strip_tags($_POST['data']);}else{$key = "null";}
+//Requesting / setting uid to interact with account
+if(isset($_REQUEST['uid'])){$_SESSION['uid'] = strip_tags($_REQUEST['uid']);}
+
+
 //Sets var from hidden value from personal data form to allow of update only when form is submitted
+if(isset($_POST['data'])){$key = strip_tags($_POST['data']);}else{$key = "null";}
 
-
-//Flag allowing submission to occur
+//Flag allowing submission to occur if field posts
 if($key == "formdata"){
 
 	//Posting fields from personal details form / sanitizing fields
@@ -22,74 +25,77 @@ if($key == "formdata"){
 	$lastnameupdate = strip_tags($_POST['lastname']);
 	$emailaddressupdate = strip_tags($_POST['email_address']);
 	
+	//Retrieving phone number and email address for matching & preventing conflicts
+	$current = "SELECT email_address, phone_number FROM users WHERE uid = ?";
+	$stmt = $conn->prepare($current);
+	$stmt->bind_param('s', $_SESSION['uid']);
+	if($stmt->execute()){$result = $stmt->get_result();
+						$data = $result->fetch_assoc();
+						 $em = $data['email_address'];
+						 $pm = $data['phone_number'];
+						}
+	$stmt->close();
+	
 	//Checking if email address is associated with another account
     $check = "SELECT email_address FROM users WHERE email_address = ?";
 	$stmt = $conn->prepare($check);
 	$stmt->bind_param('s', $emailaddressupdate);
 	if($stmt->execute()){$result = $stmt->get_result();
 						 
-						 //Var containing numerical result
+						 //Var containing numerical result of email address match
 						$count = $result->num_rows;
+						 
 						
+						 
+						 //Checking if email address in array is same as on account
+						if($emailaddressupdate == $em){$count = 0;}
 						}
 						$stmt->close(); 
 	
-	//Checking if email is same as on logged in users account
-	$matchcheck = "SELECT email_address FROM users WHERE uid = ?";
-	$stmt = $conn->prepare($matchcheck);
-	$stmt->bind_param('s', $_SESSION['uid']);
-	if($stmt->execute()){$result = $stmt->get_result();
-						 
-//Fetching row for data
- $emailx = $result->fetch_assoc();
-						 //Setting var with email address of current user
-						 $emailmatch['email_address'] = $emailx['email_address'];
-						 
-}
- $stmt->close();
+	
 	
 	//Function for results of possible matching email address in database of users
-	if($count > 0){
+	if($count != 0){
 	
-		if($emailmatch['email_address'] == $emailaddressupdate){}else{
+		if($em == $emailaddressupdate){echo "email same as on account.";}else{
 			
 			//Setting session var with error message if email address is already in database / Redirecting back to settings
-		$_SESSION['emailerror'] = "<font color='#ff0000'><strong>Email address is associated with another account.</strong></font>"; header("location: settings.php"); exit;
+		$_SESSION['emailerror'] = "<font color='green'><strong>Email address is associated with another account.</strong></font>"; header("location: user_view.php"); exit;
 		}
 	}
 	//Setting email address var to be used in update 
 	$phonenumberupdate  = strip_tags($_POST['phone_number']);
 	
 	
-	//Query database to check if phone number exists with another user or is existing number for interacting user
-$string = "SELECT uid, phone_number FROM users WHERE phone_number = ?";
+	//Query database to check if phone number exists with another user
+$string = "SELECT phone_number FROM users WHERE phone_number = ?";
 $stmt = $conn->prepare($string);
 $stmt->bind_param('s', $phonenumberupdate);
-	
-	//Setting flag var / 0 means phone number is unused / 0 also means phone number is interacting users current phone number to prevent conflict during updates
-	$phonecount = 0;
+
 if($stmt->execute()){$result = $stmt->get_result();
 					 
-					 //Var containing result of matches for phone number
+					 //Var containing result of phone number to rows
 					$phonecount = $result->num_rows;
 					 
-					 //Array fetched for uid data
+					 //Setting array as var
 					 $pd = $result->fetch_assoc();
 					 
-					 //If uid of phone number matches interacting userers phone number $phonecount returns to zero
-					 if($pd['uid'] == $_SESSION['uid']){$phonecount = 0;}
-					 
-					 //Comparing phone number
+					 //Setting var 
 					 $phonematch = $pd['phone_number'];
+					 
+					 //Comparing result of query for phone number to phone number on interacting users account
+					 //Setting $phonecount var to zero to prevent conflict & allowing update of data
+					 if($phonematch == $pm){$phonecount = 0;
+					}
 					}
 	$stmt->close();
 	
-	//If phone number does exist function
+	//If phone number does exist in database, update is allowed.
 if($phonecount > 0){
-	if($phonenumberupdate == $phonematch){}else{
+	if($pm == $phonematch){}else{
 		
 		//Setting session var for error message to alert user of existing phone number / redirecting back to settings
-	$_SESSION['numberinuse'] = "<font color='#ff0000>Phone number is associated with another member.</strong></font>"; header("location: settings.php"); exit;}
+	$_SESSION['numberinuse'] = "<font color='green'><strong>Phone number is associated with another user.</strong></font>"; header("location: user_view.php"); exit;}
 
 }
 	//Posting / sanitizing input fields from personal details
@@ -98,27 +104,35 @@ if($phonecount > 0){
 	$zipupdate = strip_tags($_POST['zip']); 
 	
 	//Checking for empty fields / setting empty session var if empty/
-      if(empty($firstnameupdate) || empty($lastnameupdate) && empty($emailaddressupdate) && empty($phonenumberupdate) && empty($cityupdate) && empty($stateupdate) && empty($zipupdate)){$_SESSION['error'] = "<font color='#ff0000'>All fields are required</font>.";
-	  
-	  //To display page with refreshed data
-	  header("location: settings.php");
-	  exit;
-	  }else{
+      if(empty($firstnameupdate) || empty($lastnameupdate) && empty($emailaddressupdate) && empty($phonenumberupdate) && empty($cityupdate) && empty($stateupdate) && empty($zipupdate)){$_SESSION['error'] = "<font color='#ff0000'><strong>All fields are required.</strong></font>."; header("location: user_view.php");
+	  exit; }else{
 	
 	
 	
-	
-	
-	
-	//Updating personal details received from user
+    //Updating personal details received from user
 	$updatestring ="UPDATE users SET firstname = ?, lastname = ?, email_address = ?, phone_number = ?, city = ?, state = ?, zip = ? WHERE uid = ?";
 	$stmt = $conn->prepare($updatestring);
 	$stmt->bind_param('ssssssss', $firstnameupdate, $lastnameupdate, $emailaddressupdate, $phonenumberupdate, $cityupdate, $stateupdate, $zipupdate, $_SESSION['uid']);
 	if($stmt->execute()){
 		
 		//Setting temp session var on successful update
-		$_SESSION['update'] = "<font color='green'><strong>Settings have been updated</strong></font>";}else{
-			
+		$_SESSION['update'] = "<font color='green'><strong>Settings have been updated.</strong></font>";
+	
+		//Setting temp var to use for redirecting to user view
+		$tempvar = $_SESSION['uid'];
+		
+		//Unsetting current users uid from session
+	unset($_SESSION['uid']);
+		
+		//Redirecting to user view with refreshed data
+	header("location: user_view.php?uid=$tempvar");
+		exit;
+	}else{
+			//Setting temp var to use for redirecting to user view
+		$tempvar = $_SESSION['uid'];
+		
+		//Unsetting current users uid from session
+	unset($_SESSION['uid']);
 			
 			//Setting temp session var on failed update
 			$_SESSION['update'] = "<font color='#ff0000'><strong>Something didn't work right.</strong></font>";
@@ -127,9 +141,9 @@ if($phonecount > 0){
 	
 	
 		//Loads settings page with updated data
-	header("location: settings.php");
+	header("location: user_view.php?uid=$tempvar");
 		exit;
-	}
+	  }
 }else{
 	
 
@@ -151,17 +165,15 @@ if($phonecount > 0){
 						 
 						}
 	
-	
+	$stmt->close();
 	
 }
 
-
-
-//Site settings config ID
+//Site settings id
 $configid = "1";
 
-//Query for site settings / title
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+//Retrieving website title
+$settings_sql = "SELECT website_title FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -177,7 +189,7 @@ $stmt->close();
 <html>
 <head>
 <meta charset="utf-8">
-<title><?php echo $website_title; ?> - My Settings</title>
+<title><?php echo $website_title; ?> - Settings</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -223,7 +235,7 @@ a:active {
     </tr>
     <tr>
       <td height="79">&nbsp;</td>
-      <td align="center">&nbsp;</td>
+      <td align="center"><h3>User Management - Viewing User</h3></td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -241,8 +253,8 @@ a:active {
 		<table width="500" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="153"><h2>Settings</h2></td>
-      <td width="422" align="center">
+      <td width="122"></td>
+      <td width="453" align="center">
 		  
 		  
 		   <?php
@@ -265,22 +277,18 @@ a:active {
 		  //Displaying phone number in use error message / unsetting error message
 		  		  if(isset($_SESSION['numberinuse'])){echo $_SESSION['numberinuse']; unset($_SESSION['numberinuse']);}
 
-		  if(isset($_SESSION['passwordmatch'])){echo $_SESSION['passwordmatch']; unset($_SESSION['passwordmatch']);}
 		  
+		  
+		  
+		  if(isset($_SESSION['completestatus'])){echo $_SESSION['completestatus']; unset($_SESSION['completestatus']);}
 		  ?>
 		
 		</td>
       <td width="75">&nbsp;</td>
     </tr>
     <tr>
-      <td colspan="3"><hr width="100%" color="lightgray"></td>
-      </tr>
-    <tr>
-      <td colspan="2">View and modify your personal details and security information.</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td colspan="2">&nbsp;</td>
+      <td></td>
+      <td align="center">&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -296,42 +304,29 @@ a:active {
 		  
 		  
 		  <!---------Start of personal details form--------->
-		  <form action="settings.php" method="post">
+		  <form action="user_view.php" method="post">
 		<table width="500" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-		<td>&nbsp;</td>
-		<td>&nbsp;</td>
-		<td><strong><u>Personal Details</u></strong></td>
-      <td width="7">&nbsp;</td>
-      <td width="73">&nbsp;</td>
-      <td width="9">&nbsp;</td>
-      <td width="186">&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td><small>First name</small></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td><small>Last name</small></td>
-    </tr>
-    <tr>
-      <td width="27">&nbsp;</td>
+		<td colspan="3"><strong><u>Personal Details</u></strong></td>
+      <td width="8">&nbsp;</td>
+      <td width="77">&nbsp;</td>
       <td width="10">&nbsp;</td>
-      <td width="188"><input type="text" name="firstname" size="24" maxlength="24" value="<?php echo $firstname; ?>"></td>
+      <td width="174">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="3">&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td width="74">First name</td>
+      <td width="6">&nbsp;</td>
+      <td width="151"><input type="text" name="firstname" size="24" maxlength="24" value="<?php echo $firstname; ?>"></td>
+      <td>&nbsp;</td>
+      <td>Last name</td>
       <td>&nbsp;</td>
       <td><input type="text" name="lastname" value="<?php echo $lastname; ?>"></td>
     </tr>
@@ -345,20 +340,11 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td><small>Email address</small></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td><small>Phone number</small></td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
+      <td>Email address</td>
       <td>&nbsp;</td>
       <td><input type="text" name="email_address" size="24" maxlength="24" value="<?php echo $email_address; ?>"></td>
       <td>&nbsp;</td>
-      <td>&nbsp;</td>
+      <td>Phone number</td>
       <td>&nbsp;</td>
       <td><input type="text" name="phone_number" size="10" maxlength="10" value="<?php echo $phone_number; ?>"></td>
     </tr>
@@ -372,9 +358,7 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-		<td>&nbsp;</td>
-		<td>&nbsp;</td>
-		<td><strong><u>Location</u></strong></td>
+		<td colspan="3"><strong><u>Location</u></strong></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
@@ -390,20 +374,11 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td><small>City</small></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td><small>State</small></td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
+      <td>City</td>
       <td>&nbsp;</td>
       <td><input type="text" name="city" size="24" maxlength="32" value="<?php echo $city; ?>"></td>
       <td>&nbsp;</td>
-      <td>&nbsp;</td>
+      <td>State</td>
       <td>&nbsp;</td>
       <td>
 		
@@ -482,16 +457,7 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td><small>Zip</small></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
+      <td>Zip</td>
       <td>&nbsp;</td>
       <td><input type="text" name="zip" size="5" maxlength="5" value="<?php echo $zip; ?>"></td>
       <td>&nbsp;</td>
@@ -528,9 +494,7 @@ a:active {
 
 				
 		
-		
-		
-		</td>
+</td>
     </tr>
     <tr>
       <td colspan="3">&nbsp;</td>
@@ -543,32 +507,18 @@ a:active {
     <tr>
       <td>
 		  
-		  <!---------Start of password update form--------->
-		<form action="change_pass.php" method="post">
+		
 		<table width="650" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="111">&nbsp;</td>
-      <td colspan="2"><strong><u>Password Settings</u></strong></td>
+      <td width="74">&nbsp;</td>
+      <td width="149"><strong><u>Password Settings</u></strong></td>
+      <td width="158">&nbsp;</td>
       <td width="230">&nbsp;</td>
       <td width="39">&nbsp;</td>
     </tr>
     <tr>
       <td>&nbsp;</td>
-      <td width="124">&nbsp;</td>
-      <td width="146">&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td><small>New Password</small></td>
-      <td><input type="password" name="passone"></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
@@ -576,22 +526,14 @@ a:active {
     </tr>
     <tr>
       <td>&nbsp;</td>
-      <td><small>Confirm password</small></td>
-      <td><input type="password" name="passtwo"></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td><input type="hidden" name="formref" value="cp"></td>
-      <td>&nbsp;</td>
+      <td>Password</td>
+      <td colspan="2">Force Password Reset</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
-      <td><input type="submit" name="submit" id="submit" value="Update Password"></td>
+      <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
@@ -604,14 +546,64 @@ a:active {
     </tr>
   </tbody>
 </table>
-		  </form>
-		<!---------End of personal details form--------->
+		 
 		</td>
     </tr>
   </tbody>
 </table>
 
-  
+		  
+		  
+		  <table width="650" border="0" cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td width="123">&nbsp;</td>
+      <td width="193">&nbsp;</td>
+      <td width="165">&nbsp;</td>
+      <td width="82">&nbsp;</td>
+      <td width="87" align="center"><a href="remove_user.php?uid=<?php echo $_SESSION['uid']; ?>">Remove user</a></td>
+    </tr>
+  </tbody>
+</table>
+
+		  
+		  <p></p>
+		  
+ <table width="500" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
+  <tbody>
+	  
+	   <tr>
+	  <td><strong>User pets</strong></td>
+	  </tr>
+    <tr>
+      <td> <table width="500" border="0" cellspacing="0" cellpadding="0">
+  <tbody>
+	  
+	  <?php
+	  $petlist = "SELECT * FROM pets WHERE uid = ?";
+	  $stmt = $conn->prepare($petlist);
+	  $stmt->bind_param('s', $_SESSION['uid']);
+	  if($stmt->execute()){$result = $stmt->get_result();
+						  
+						  $count = $result->num_rows;
+						   
+						   if($count == 0){echo "user has no pets to display";}else{
+						  while($pets = $result->fetch_assoc()){
+							  
+			echo"
+    <tr>
+      <td>$pets[name]</td><td><a href='print.php?petid=$pets[pid]'>Print QR Code</a></td><td><a href='generate_id.php?petid=$pets[pid]'>Generate new QR code</a></td>
+    </tr>";
+						  }}}
+	  ?>
+	  
+  </tbody>
+</table></td>
+    </tr>
+  </tbody>
+</table>
+
+
 		  
 		  
 		  

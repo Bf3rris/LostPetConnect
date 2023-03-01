@@ -13,15 +13,15 @@ Each pet that is inserted in the database is given a QR code and a personalized 
 ----------------
 
 
- <h2>Requirements</h2>:<br />
-(Server)<br />
+ <h2>Requirements</h2><br />
+	<strong>(Server)</strong><br />
 Apache webserver<br />
 PHP (8 and up)<br />
 MySQL<br />
 allow_url_fopen = enabled<br />
 Fileinfo (PHP) extension<br />
 <p>
-(Phone number)<br />
+<strong>(Phone number)</strong><br />
 Purchased phone number from SignalWire:<br />
 *Local and toll numbers are compatible.<br />
 
@@ -29,8 +29,8 @@ Purchased phone number from SignalWire:<br />
   <h2>Installation</h2><br />
 Upload files:<br />
 Upload all files and directories that are located in the compressed file to the root directory of your server. Code adjustments<br /> may be necessary if software is installed in a subdirectory.
-
 <p>
+	
   <strong>Chmod the following directories</strong>:<br />
 'images/images' [757]<br />
 (User uploaded image directory)<br />

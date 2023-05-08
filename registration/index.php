@@ -243,14 +243,12 @@ a:active {
       <td>&nbsp;</td>
       <td><?php
 		  
-		  //Displaying error message if state field is blank
-		  if(isset($_SESSION['stateerror'])){echo $_SESSION['stateerror'];
 											
-											//Unsetting blank state error message
-											unset($_SESSION['stateerror']);}
+			 //Displaying error message if state field is not changed
 		  if(isset($_SESSION['stateselect'])){echo $_SESSION['stateselect']; unset($_SESSION['stateselect']);}
-		  
-		  ?></td>
+		  ?>
+		
+		</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>

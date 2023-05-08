@@ -6,8 +6,6 @@ require('../connection.php');
 //Starting user session
 session_start();
 
-
-
 //Site settings config ID
 $configid = "1";
 
@@ -25,7 +23,6 @@ $stmt->close();
 
 
 //Setting var so form doesn't get erased on form refreshes
-
 if(isset($_POST['formref']) === false){}else{
 if(strip_tags(strip_tags($_POST['formref'] == "reg"))){
 	
@@ -35,15 +32,13 @@ $_SESSION['lastname'] = strip_tags($_POST['lastname']);
 $_SESSION['email_address'] = strtolower(strip_tags($_POST['emailaddress']));
 $_SESSION['city'] = strip_tags($_POST['city']);
 $_SESSION['state'] = strip_tags($_POST['state']);
-	if($_SESSION['state'] == "blank"){$_SESSION['stateselect'] = "Select your state"; header("location: index.php"); exit;}
+	
+//Flag to catch value of state if user hasnt selected one
+if($_SESSION['state'] == "blank"){$_SESSION['stateselect'] = "Select your state"; header("location: index.php"); exit;}
 	
 $_SESSION['zip'] = strip_tags($_POST['zip']);
 $_SESSION['mobilenumber'] = strip_tags($_POST['mobilenumber']);
 
-		
-//Checking for user input of 'state'
-if($_SESSION['state'] == "Select your state:"){$_SESSION['stateerror'] = "Select a state"; header("location: index.php"); exit;}	
-	
 
 //Checking if password fields contains at least 6 chars
 if(strlen(strip_tags($_POST['password'])) < 6){$_SESSION['passwordlength'] = "Password is less than 6 characters"; header("location: index.php"); exit;}
@@ -57,12 +52,12 @@ $confirm_password = strip_tags(sha1($_POST['confirmpassword']));
 	//Comparing input from both password fields
 if($password != $confirm_password){$_SESSION['passwordmatch'] = "Password fields don't match"; header("location: index.php"); exit;}
 
-	//Checking for empty password fields
+//Checking for empty password fields
 if(empty($password)){$_SESSION['passwordoneerror'] = "Password is empty"; header('location: index.php'); exit;}
 if(empty($confirm_password)){$_SESSION['passwordtwoerror'] = "Confirm Password is empty"; header('location: index.php'); exit;}	
 
 	
-//Directing back to registration page if password fields don't match
+//Directing back to registration page if password fields don't match / alerting user
 if($password != $confirm_password){$_SESSION['passworderror'] = "<font color='#ff0000'>Passwords don't match</font>"; header('location: index.php'); exit;}else{$_SESSION['password'] = $password;}
 
 //Preserves password for form if user navigates away then back to admin setup page 
@@ -221,12 +216,12 @@ a:active {
       </tr>
     <tr>
       <td>&nbsp;</td>
-      <td>Input details about your pet.<br />You can add more pets after initial registration is complete.</td>
+      <td>Create your pets personal profile by completing the form below.</td>
       <td>&nbsp;</td>
       </tr>
     <tr>
       <td>&nbsp;</td>
-      <td>&nbsp;</td>
+      <td align="center">&nbsp;</td>
       <td>&nbsp;</td>
       </tr>
     <tr>
@@ -238,16 +233,17 @@ a:active {
 		<table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td colspan="2" align="center">&nbsp;</td>
+      <td colspan="3" align="center">&nbsp;</td>
       </tr>
     <tr>
-      <td colspan="2" valign="top">
+      <td colspan="3" valign="top">
 		
 		  <?php 
 		  
 		  //Displaying error message if pet name field is blank
 		  if(isset($_SESSION['petnameerror']))
 		  {echo $_SESSION['petnameerror'];
+		   
 		   //Unsetting error message
 		   unset($_SESSION['petnameerror']);
 											 }
@@ -257,17 +253,17 @@ a:active {
 		</td>
     </tr>
     <tr>
-      <td width="9%">Name</td>
-      <td width="78%">
+      <td width="16%">Name</td>
+      <td colspan="2">
         
         <input type="text" name="petname" value="<?php if(isset($_SESSION['petname'])){echo $_SESSION['petname'];} ?>"></td>
       </tr>
     <tr>
-      <td colspan="2">&nbsp;</td>
+      <td colspan="3">&nbsp;</td>
       </tr>
     <tr>
       <td>&nbsp;</td>
-      <td>
+      <td colspan="2">
 		  
 		  
 		  <?php 
@@ -275,6 +271,7 @@ a:active {
 		  //Displaying error message if pet gender field is empty
 		  if(isset($_SESSION['petgendererror']))
 		  {echo $_SESSION['petgendererror'];
+		   
 		   //Unsetting error message
 		   unset($_SESSION['petgendererror']);
 		   }
@@ -284,7 +281,7 @@ a:active {
     </tr>
     <tr>
       <td>Gender</td>
-      <td><select name="gender">
+      <td colspan="2"><select name="gender">
 		  <option value="male">Male</option>
 		  <option value="female">Female</option>
 		  </select>
@@ -292,32 +289,51 @@ a:active {
 		</td>
     </tr>
     <tr>
-      <td colspan="2">&nbsp;</td>
+      <td colspan="3">&nbsp;</td>
     </tr>
     <tr>
       <td>&nbsp;</td>
-      <td><?php
+      <td colspan="2"><?php
 		  
 		  //Displaying error message if pet age field ie empty
 		  if(isset($_SESSION['petageerror'])){
 	  echo $_SESSION['petageerror'];
 			  //Unsetting error message
 unset($_SESSION['petageerror']);}
+		  
+		  //Displaying error message if months/years isn't set
+		    if(isset($_SESSION['timenounerror'])){
+	  echo $_SESSION['timenounerror'];
+			  //Unsetting error message
+unset($_SESSION['timenounerror']);}
+		  
  ?>
 		
 		</td>
     </tr>
     <tr>
       <td>Age</td>
-      <td><input type="number" name="petage"  max="99" min="1" value="<?php
+      <td width="40%"><input type="number" name="petage"  max="99" min="1" value="<?php
 		  //Diplaying pet age if already saved as session var
-		  if(isset($_SESSION['petage'])){echo $_SESSION['petage'];}?>"></td>
+		  if(isset($_SESSION['petage'])){echo $_SESSION['petage'];}?>">
+		  
+		  
+		 
+			
+			  <select name="timenoun">
+          <option value="Months">Months</option>
+          <option value="Years">Years</option>
+        </select>
+			
+			
+			</td>
+      <td width="44%">&nbsp;</td>
       </tr>
     <tr>
-      <td colspan="2">&nbsp;</td>
+      <td colspan="3">&nbsp;</td>
       </tr>
     <tr>
-      <td colspan="2">About my pet
+      <td colspan="3">About my pet
 		  
 		  <?php
 		  
@@ -337,13 +353,13 @@ unset($_SESSION['petageerror']);}
 			</td>
       </tr>
     <tr>
-      <td colspan="2" align="center">&nbsp;</td>
+		<td colspan="3" align="center"><Small>You can change this later.</small></td>
     </tr>
     <tr>
-      <td colspan="2"><input type="hidden" name="detailkey" value="detail"></td>
+      <td colspan="3"><input type="hidden" name="detailkey" value="detail"></td>
       </tr>
     <tr>
-      <td colspan="2" align="center">
+      <td colspan="3" align="center">
         
         
         <table width="100%" border="0" cellspacing="0" cellpadding="0">

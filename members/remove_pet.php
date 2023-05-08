@@ -6,6 +6,7 @@ require('../connection.php');
 //Starting user session
 session_start();
 
+//Redirecting to login if session isn't set
 if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 
 
@@ -45,7 +46,7 @@ if(isset($_SESSION['rmid'])){}else{$_SESSION['rmid'] = strip_tags($_REQUEST['pet
 //Setting var to confirm action for pet removal
 if(isset($_POST['confirm'])){$confirm = strip_tags($_POST['confirm']);}else{$confirm = "unset";}
 
-//Function to confirm removal set b
+//Function/flag to confirm removal of pet
 if($confirm == "Yes"){
 	
 	
@@ -200,7 +201,8 @@ a:active {
   </tbody>
 </table>
 			  </form>
-		<!------------End of confirmation form ------------></td>
+		<!------------End of confirmation form ------------>
+		</td>
     </tr>
   </tbody>
 </table>

@@ -4,7 +4,6 @@
 //Start mysqli connection
 require('../connection.php');
 
-
 //Posting / sanitizing login credentials
 $email_address = strip_tags($_POST['email_address']);
 

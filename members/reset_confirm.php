@@ -21,7 +21,7 @@ $stmt->close();
 $configid = "1";
 
 //Query for site settings / title
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -74,22 +74,22 @@ a:active {
 <body>
 	
 	
-	<table width="1500" border="0" align="center" cellpadding="0" cellspacing="0">
+	<table width="700" border="0" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
       <td>
 		
 		
-		<table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+		<table width="700" border="0" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
       <td colspan="4">
-		<table width="1500" border="0" cellspacing="0" cellpadding="0">
+		<table width="700" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
       <td width="193">&nbsp;</td>
       <td width="306">&nbsp;</td>
-      <td width="536" align="center"><img src="../imgs/logo.jpg"></td>
+      <td width="536" align="center"><h2><?php echo $website_title; ?></h2></td>
       <td width="65">&nbsp;</td>
       <td width="400" align="right">&nbsp;</td>
       </tr>
@@ -147,6 +147,9 @@ a:active {
       <td colspan="2" align="center">
 		<p>
 		  <?php
+			
+			
+			//Displaying possible password error messages if necessary
 		 if(isset($_SESSION['passwordstatus'])){echo "$_SESSION[passwordstatus] \n";
 											   unset($_SESSION['passwordstatus']);}
 			
@@ -170,6 +173,7 @@ a:active {
     <tr>
       <td align="center">
 		<?php
+		  //Displaying error message if 
 	if(isset($_SESSION['error'])){
 		echo $_SESSION['error'];
 	unset($_SESSION['error']);
@@ -263,12 +267,7 @@ The details that you have provided are invalid for this request.<br />
     </tr>
   </tbody>
 </table>
-<center><?php 
-	
-	if($count == 1){echo "
-	<a href='../members'>Go to Login</a>";}
-		
-		?>
+<center>
 		</center>
 		  
 		  

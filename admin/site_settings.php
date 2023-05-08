@@ -22,8 +22,7 @@ if($stmt->execute()){$result = $stmt->get_result();
 					 $website_title = $array['website_title'];
 					 $domain = $array['domain'];
 					 $support_email = $array['support_email'];
-					 $photo_dir = $array['photo_dir'];
-					 $qr_dir = $array['qr_dir'];
+					 $composer_path = $array['composer_path'];
 					 }
 
 //Key var prevents unintentional form submits 
@@ -34,13 +33,15 @@ if(isset($_POST['formref'])){
 	$fwt = strip_tags($_POST['website_title']);
 $fdm = rtrim(strip_tags($_POST['domain']), "/");
 $fsc = strip_tags($_POST['support_email']);
-$fpd = strip_tags($_POST['photo_directory']);
-$fqd = strip_tags($_POST['qr_directory']);
+$cp = strip_tags($_POST['composer_path']);
+
+	if(empty($fxfn) || empty($fwt) || empty($fdm) || empty($fsc) || empty($cp)){$_SESSION['emptyinput'] = "All fields must be completed.";}
+	
 	
 	//Updating website settings row
-	$update_sql = "UPDATE site_settings SET website_title = ?, domain = ?, support_email = ?, photo_dir = ?, qr_dir = ?, xfn = ? WHERE id = ?";
+	$update_sql = "UPDATE site_settings SET website_title = ?, domain = ?, support_email = ?, composer_path = ?, xfn = ? WHERE id = ?";
 	$stmt = $conn->prepare($update_sql);
-	$stmt->bind_param('ssssssi', $fwt, $fdm, $fsc, $fpd, $fqd, $fxfn, $configid);
+	$stmt->bind_param('sssssi', $fwt, $fdm, $fsc, $cp, $fxfn, $configid);
 	if($stmt->execute()){
 		//Setting var for success message
 		$_SESSION['updatestatus'] = "<font color='green'><strong>Settings have been updated.</strong></font>";
@@ -111,276 +112,241 @@ a:active {
       <td width="52">&nbsp;</td>
     </tr>
     <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td align="center"></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
       <td rowspan="5"><?php require('navigation.php'); ?></td>
       <td>&nbsp;</td>
       <td colspan="3" rowspan="8" align="center">
-		
-		  
-		  
-		  
-		  <table width="500" border="0" cellspacing="0" cellpadding="0">
-  <tbody>
-    <tr>
-      <td><h2>Website Settings</h2></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td align="center">
-		
-		  <?php
+        
+        
+        
+        
+        <table width="500" border="0" cellspacing="0" cellpadding="0">
+          <tbody>
+            <tr>
+              <td><h2>Website Settings</h2></td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              </tr>
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              </tr>
+            <tr>
+              <td align="center">
+                
+                <?php
 		  //Displaying site settings update/failure message if exists
 		  if(isset($_SESSION['updatestatus'])){echo $_SESSION['updatestatus'];
 											  //Unsetting update/failure message
 											  unset($_SESSION['updatestatus']);}
 		  ?>
-		
-		
-		</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td><hr width="100%" color="lightgray"></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>View and manage details about your website.</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-  </tbody>
-</table>
-
-		 <table width="500" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
-  <tbody>
-    <tr>
-      <td><form action="site_settings.php" method="post">
-        <table width="500" border="0" cellspacing="0" cellpadding="0">
-		  <tbody>
-		    </tbody>
+                
+                
+                </td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              </tr>
+            <tr>
+              <td><hr width="100%" color="lightgray"></td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              </tr>
+            <tr>
+              <td>View and manage details about your website.</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              </tr>
+            <tr>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              </tr>
+            </tbody>
+  </table>
+        
+        <table width="500" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
           <tbody>
             <tr>
-              <td width="143"></td>
-              <td width="117">&nbsp;</td>
-              <td width="120">&nbsp;</td>
-              <td width="87">&nbsp;</td>
-              <td width="33">&nbsp;</td>
-            </tr>
-            <tr>
-              <td></td>
-				<td><u><strong>Proxy Phone Number</strong></u></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td><input type="tel" name="xfn" value="<?php echo $xfn; ?>" size="11" maxlength="11"></td>
-				<td><small>(Ex. 12120004567)</small></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td></td>
-				<td colspan="2"><small>Number must be obtained from your SignalWire account.</small></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2"><strong><u>Website Settings</u></strong></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td>Website title</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2"><input type="text" name="website_title" value="<?php echo $website_title; ?>"></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td>Domain or IP</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2"><input type="text" name="domain" value="<?php echo $domain; ?>"></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="3"><small>QR codes are generated using this domain / IP.</small></td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2">Support Contact</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2"><input type="text" name="support_email" value="<?php echo $support_email; ?>"></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td colspan="2"><strong><u>Image Locations</u></strong></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td colspan="2">&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td>Photo directory</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2"><input type="text" name="photo_directory" value="<?php echo $photo_dir; ?>"></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2">QR Code directory</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2"><input type="text" name="qr_directory" value="<?php echo $qr_dir; ?>"></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2">&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2"><small>*Note: If image directories are changed, you must manually move image files to new directory.</small></td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2"><input type="hidden" name="formref" value="ss"></td>
-              <td><input type="submit" value="Update Settings"></td>
-              <td>&nbsp;</td>
-            </tr>
-            <tr>
-              <td>&nbsp;</td>
-              <td colspan="2">&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-            </tr>
-          </tbody>
-          <tbody>
-          </tbody>
-		  </table>
-		</form>
-		
-		</td>
-    </tr>
-  </tbody>
-</table>
-
-
-		
-		
-		</td>
+              <td><form action="site_settings.php" method="post">
+                <table width="500" border="0" cellspacing="0" cellpadding="0">
+                  <tbody>
+                    </tbody>
+                  <tbody>
+                    <tr>
+                      <td width="143"></td>
+                      <td width="117">&nbsp;</td>
+                      <td width="120">&nbsp;</td>
+                      <td width="87">&nbsp;</td>
+                      <td width="33">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td></td>
+                      <td><u><strong>Proxy Phone Number</strong></u></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td></td>
+                      <td><input type="tel" name="xfn" value="<?php echo $xfn; ?>" size="11" maxlength="11"></td>
+                      <td><small>(Ex. 12120004567)</small></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td></td>
+                      <td colspan="2"><small>Number must be obtained from your SignalWire account.</small></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><strong><u>Website Settings</u></strong></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td>Website title</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><input type="text" name="website_title" value="<?php echo $website_title; ?>"></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td>Domain or IP</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><input type="text" name="domain" value="<?php echo $domain; ?>"></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="3"><small>QR codes are generated using this domain / IP.</small></td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2">Support Contact</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><input type="text" name="support_email" value="<?php echo $support_email; ?>"></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td></td>
+                      <td colspan="2"><strong><u>Composer autoloader path</u></strong></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td></td>
+                      <td colspan="2"><input type="text" name="composer_path" value="<?php echo $composer_path; ?>"></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><small>Dependant files are located in the 'comm' directory.</small></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2">&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2">&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><input type="hidden" name="formref" value="ss"></td>
+                      <td><input type="submit" value="Update Settings"></td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2">&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    </tbody>
+                  <tbody>
+                    </tbody>
+                  </table>
+                </form>
+                
+                </td>
+              </tr>
+            </tbody>
+  </table>
+        
+        
+        
+        
+        </td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>

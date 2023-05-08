@@ -20,6 +20,7 @@ if($key == "mp"){
 	//Posting / sanitizing input fields of pet details
     $nameupdate = strip_tags($_POST['name']);
 	$ageupdate = strip_tags($_POST['age']);
+	$timenounupdate = strip_tags($_POST['timenoun']);
 	$genderupdate = strip_tags($_POST['gender']);
 	$descriptionupdate = strip_tags($_POST['description']);
 	$statusupdate = strip_tags($_POST['status']);
@@ -27,23 +28,26 @@ if($key == "mp"){
 	if($statusupdate == "1"){$status_date = "";}else{$status_date = date('m.d.y');}
 	
 //Checking for empty pet details fields
-	if(empty($nameupdate) || empty($ageupdate) || empty($genderupdate) || empty($descriptionupdate)){
+	if(empty($nameupdate) || empty($ageupdate) || empty($timenounupdate) ||empty($genderupdate) || empty($descriptionupdate)){
 		
 		
 		//Setting var holding error fields error
 		$_SESSION['emptydetails'] = "<font color='#ff0000'><strong>Empty fields are not allowed.</strong></font>";
 		
 		//Redirecting to manage pets page if fields are blank
-		header("manage_pet.php");}
+		header("location: manage_pet.php?petid=$petid");exit;}
 	
 	//Updating pet details
-	$update = "UPDATE pets SET name = ?, age = ?, description = ?, gender = ?, status = ?, status_date = ? WHERE pid = ? AND uid = ?";
+	$update = "UPDATE pets SET name = ?, age = ?, timenoun = ?, description = ?, gender = ?, status = ?, status_date = ? WHERE pid = ? AND uid = ?";
 	$stmt = $conn->prepare($update);
-	$stmt->bind_param('ssssssss', $nameupdate, $ageupdate, $descriptionupdate, $genderupdate, $statusupdate, $status_date, $petid, $_SESSION['uid']);
+	$stmt->bind_param('sssssssss', $nameupdate, $ageupdate, $timenounupdate, $descriptionupdate, $genderupdate, $statusupdate, $status_date, $petid, $_SESSION['uid']);
 	if($stmt->execute()){$_SESSION['updatestatus'] = "<font color='green'><strong>Pet information has been updated.</strong></font>";}else{$_SESSION['updatestatus'] = "<font color='red'>something went wrong</font>";}
     $stmt->close();
 	
-
+	//Redirecting to pets page after successful update
+	header("location: manage_pet.php?petid=$petid");
+	exit;
+	
 }
 
 //SQL query for pet details
@@ -53,10 +57,11 @@ $stmt->bind_param('ss', $petid, $_SESSION['uid']);
 if($stmt->execute()){$result = $stmt->get_result();
 					$data = $result->fetch_assoc();
 				
-					 //Setting vars for each pet detail
+					 //Setting vars for initial field data
 					 $name = $data['name'];
 					 $gender = $data['gender'];
 					 $age = $data['age'];
+					 $timenoun = $data['timenoun'];
 					 $description = $data['description'];
 					 $image = $data['image'];
 					 $status = $data['status'];
@@ -74,6 +79,7 @@ $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 $domain = $array['domain'];
 					 $website_title = $array['website_title'];
 					 
 					}
@@ -129,7 +135,7 @@ a:active {
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
-      <td align="center"><h2>Lost Pet Connect</h2></td>
+      <td align="center"><h2><?php echo $website_title; ?></h2></td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -204,18 +210,18 @@ a:active {
 		  Current Photo
 		  
 		  </td>
-	  <td align="center">&nbsp;</td>
+	  <td align="center"><a href="<?php echo "$domain/view/petid=$petid"; ?>" target="_blank">View <?php echo $name; ?>s' Page</a></td>
 	  <td align="center">QR Code</td>
 	  </tr>
     <tr>      <td width="180" rowspan="5" align="center"><img src="../<?php echo $image; ?>" width="150" height="150" border="1"></td>
       <td width="255">&nbsp;</td>
-      <td width="165" align="center"><small><a href="#">Print</a></small></td>
+      <td width="165" align="center">&nbsp;</td>
     </tr>
     <tr>
       <td><input type="file" name="photo"></td>
       <td rowspan="3" align="center"><img src="../images/qr/<?php
 		  //Displaying QR code 
-		  echo $petid; ?>-qr.png"><input type="hidden" name="key" value="photo"></td>
+		  echo $petid; ?>-qr.png"><input type="hidden" name="key" value="photo"><input type="hidden" name="ref" value="pr"></td>
     </tr>
     <tr>
       <td><input type="hidden" name="petid" value="<?php
@@ -227,7 +233,7 @@ a:active {
       </tr>
     <tr>
       <td><input type="hidden" name="key" value="photo"></td>
-      <td>&nbsp;</td>
+      <td align="center"><small><a href='qr.php?petid=<?php echo $petid; ?>' target="_blank">Print QR Code</a></small></td>
     </tr>
   </tbody>
 </table>
@@ -255,7 +261,7 @@ a:active {
 		  <table width="600" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="122">Name</td>
+      <td width="122" align="right">Name</td>
       <td width="10">&nbsp;</td>
       <td width="199"><input type="text" name="name" value="<?php echo $name; ?>"></td>
       <td width="53">&nbsp;</td>
@@ -265,7 +271,7 @@ a:active {
       <td width="57">&nbsp;</td>
     </tr>
     <tr>
-      <td>&nbsp;</td>
+      <td align="right">&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
@@ -275,7 +281,7 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td>Gender</td>
+      <td align="right">Gender</td>
       <td>&nbsp;</td>
       <td>
 		  
@@ -293,27 +299,7 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>Age</td>
-      <td>&nbsp;</td>
-      <td><input type="number" name="age" value="<?php echo $age; ?>"></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
+      <td align="right">&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
@@ -323,17 +309,17 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td>Missing?</td>
+      <td align="right">Age</td>
       <td>&nbsp;</td>
-      <td><select name="status">
-		  <option value="<?php echo $status; ?>">
-			  <?php
-			  if($status == "1"){echo "No";}else{echo "Missing!";}
-			  ?>
-			  </option>
-		  <option value="1">No</option>
-		  <option value="2">Yes</option>
-		  </select></td>
+      <td><input name="age" type="number" max="99" min="0" value="<?php echo $age; ?>">
+		
+		<select name="timenoun">
+		  <option value="<?php echo $timenoun; ?>"><?php echo $timenoun; ?></option>
+			<?php if($timenoun == "Years"){echo "<option value='Months'>Months</option>";}else{echo "<option value='Years'>Years</option>";} ?></option>
+		  
+		  </select>
+		
+		</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
@@ -341,7 +327,35 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
+      <td align="right">&nbsp;</td>
       <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td align="right">Missing?</td>
+      <td>&nbsp;</td>
+      <td>
+		
+		<select name="status">
+		 <option value="<?php echo $status; ?>"><?php if($status == "1"){echo "Safe";}else{echo "Missing";} ?></option>
+			<option value="<?php if($status == "2"){echo "1";}else{echo "2";} ?>"><?php if($status == "2"){echo "Safe";}else{echo "Missing";} ?></option>
+		  </select>
+		
+		
+		</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td align="right">&nbsp;</td>
       <td>&nbsp;</td>
       <td> <?php if($status == "2"){echo "Marked as missing on: $status_date";} ?></td>
       <td>&nbsp;</td>
@@ -351,7 +365,7 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td>&nbsp;</td>
+      <td align="right">&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
@@ -361,7 +375,7 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td>Description</td>
+      <td align="right">Description</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
@@ -375,7 +389,7 @@ a:active {
       <td>&nbsp;</td>
       <td colspan="5" rowspan="4">
 		
-		<textarea name="description" cols="50" rows="15"><?php echo $description; ?></textarea>
+		<textarea name="description" cols="50" rows="15" maxlength="500"><?php echo $description; ?></textarea>
 		
 		</td>
       <td>&nbsp;</td>
@@ -401,7 +415,7 @@ a:active {
       <td><input type="hidden" name="petid" value="<?php
 		  
 		  //Var used as key to perform update with correct pet
-		  echo $petid; ?>"></td>
+		  echo $petid; ?>"><font color="gray"><small>500 Characters Max</small></font></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>

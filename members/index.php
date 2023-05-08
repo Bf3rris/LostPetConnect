@@ -1,5 +1,9 @@
 <?php
+
+//Starting MySQL connection
 require('../connection.php');
+
+//Starting user session
 session_start();
 
 
@@ -69,11 +73,14 @@ a:active {
       <td height="22">&nbsp;</td>
       <td rowspan="6" align="center" valign="top">
 		<?php 
+		  
+		  //Displaying login error
 		 if(isset($_SESSION['loginerror'])){
 		  echo $_SESSION['loginerror'];
 		  unset($_SESSION['loginerror']);
 			 }
 		  
+		  //Displaying password reset message
 		  if(isset($_SESSION['passwordstatus'])){
 		  echo $_SESSION['passwordstatus'];
 		  unset($_SESSION['passwordstatus']);

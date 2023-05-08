@@ -21,7 +21,11 @@ if($stmt->execute()){$result = $stmt->get_result();
 					}
 $stmt->close();
 
+
+//Site settings config id
 $configid = "1";
+
+//Query for site settings
 $settings_sql = "SELECT * FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
@@ -30,7 +34,7 @@ if($stmt->execute()){$result = $stmt->get_result();
 					 $website_title = $array['website_title'];
 					 
 					}
-
+$stmt->close();
 
 ?>
 

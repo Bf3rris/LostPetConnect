@@ -50,7 +50,7 @@ if(strlen(strip_tags($_POST['passtwo'])) < 6){$_SESSION['passworderror'] = "<fon
 if(strip_tags($_POST['passone'] == strip_tags($_POST['passtwo']))){$password = sha1(strip_tags($_POST['passone']));}else{$_SESSION['passwordmatch'] = "<font color='#ff0000'><strong>New passwords don't match</strong></font>"; header("location: reset_confirm.php"); exit;}
 	
 
-	//Replacing data in recreq column with filler data
+	//Replacing data in recreq column with with new data / voids previous request
 	$fill = str_shuffle(sha1(rand(11111111, 99999999)));
 	
 	//Updating user row with new password once all password checks have been satisfied
@@ -68,9 +68,6 @@ $stmt->close();
 
 
 }
-
-
-
 
 
 
@@ -130,7 +127,7 @@ a:active {
     <tr>
       <td width="193">&nbsp;</td>
       <td width="306">&nbsp;</td>
-		<td width="536" align="center"><h2><?ohp echo $website_title; ?></h2></td>
+		<td width="536" align="center"><h2><?php echo $website_title; ?></h2></td>
       <td width="65">&nbsp;</td>
       <td width="400" align="right">&nbsp;</td>
       </tr>

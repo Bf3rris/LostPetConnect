@@ -7,8 +7,8 @@ session_start();
 session_destroy();
 
 
-
 //Redirecting to index page
-if(isset($_SESSION['uid'])){}else{header("location: index.php"); exit;}
+header("location: index.php");
+exit;
 
 ?>

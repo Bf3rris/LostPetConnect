@@ -3,7 +3,7 @@
 //Start mysqli connection
 require('../connection.php');
 
-//Start usersession
+//Starting user session
 session_start();
 
 
@@ -30,34 +30,36 @@ $stmt->close();
 //Redirecting to login if user isn't logged in
 if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 
-//Key is set in form to allow for input fields to be submitted / prevents unnecessary submissions
+//Key is set in form to allow for input fields to be submitted / prevents unnecessary posting
 if(isset($_POST['key'])){
-	//
+
+//CHecking for existing petid to 
 if(strip_tags($_POST['petid'] == "")){
 
 
-	//Posting / sanitizing vars to input new pet
+	//Posting / sanitizing input fields to create new pet
     $name = strip_tags($_POST['name']);
 	$age = strip_tags($_POST['age']);
+	$timenoun = strip_tags($_POST['timenoun']);
 	$gender = strip_tags($_POST['gender']);
 	$description = strip_tags($_POST['description']);
 	
-	//Default pet image until user uploads own
+	//Using default image until user uploads personal photo
 	$default_image = $photo_dir."default_pic.png";
 	
-	//Generating petid
+	//Generating new petid
 	$pid = substr(str_shuffle(md5(date('his'))), 0, 8);
 
-	//Setting var to keep columbs empty until
+	//Setting var to keep columns mpty until user generates date
 	$blank = "";
-	
+	$defaultstatus = "1";
 	//Inserting new pet details in table
-	$update = "INSERT INTO pets (pid, uid, name, age, description, image, gender, status, status_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	$update = "INSERT INTO pets (pid, uid, name, age, timenoun, description, image, gender, status, status_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	$stmt = $conn->prepare($update);
-	$stmt->bind_param('sssssssss', $pid, $_SESSION['uid'], $name, $age, $description, $default_image, $gender, $blank, $blank);
+	$stmt->bind_param('ssssssssss', $pid, $_SESSION['uid'], $name, $age, $timenoun, $description, $default_image, $gender, $defaultstatus, $blank);
 	if($stmt->execute()){
 		//Holds success message for successful adding of pet to table
-		$_SESSION['createstatus'] = "<font color='green'>$name was added to your pets</font>";
+		$_SESSION['createstatus'] = "<font color='green'><strong>$name was added to your pets</strong></font>";
 						 
 						
 											 
@@ -73,6 +75,7 @@ if(strip_tags($_POST['petid'] == "")){
     //Storing QR code
 	file_put_contents("../".$qr_dir.$filename, $data);
 		
+		//Setting status message for successful completion of adding pet
 		$_SESSION['scstatus'] = "<font color='green'><strong>Pet was successfully added to My Pets.</strong></font>";
 						
 		//Redirecting to 'manage pets' after successful addition of pet to table
@@ -84,9 +87,10 @@ if(strip_tags($_POST['petid'] == "")){
 	//Allows for pet details to be edited if pet already exists
 	isset($_POST['petid'])){
 	
+	//Setting var if pet already exists in database
 	$currentid = strip_tags($_POST['petid']);
 	
-	//Posting / sanitizing vars containing pet details
+	//Posting / sanitizing user input of pet details
     $name = strip_tags($_POST['name']);
 	$age = strip_tags($_POST['age']);
 	$gender = strip_tags($_POST['gender']);
@@ -117,7 +121,7 @@ if(strip_tags($_POST['petid'] == "")){
 <html>
 <head>
 <meta charset="utf-8">
-<title>Lost Pet Connect - Add a New Pet</title>
+<title><?php echo $website_title; ?> - Add a New Pet</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -159,7 +163,7 @@ a:active {
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
-      <td align="center"><h2>Lost Pet Connect</h2></td>
+      <td align="center"><h2><?php echo $website_title; ?></h2></td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -173,9 +177,19 @@ a:active {
 			  unset($_SESSION['createstatus']);
 		  }
 	
+		  //Displaying invalid image file error message 
 		  
 		  if(isset($_SESSION['inavlidfile'])){echo $_SESSION['invalidfile']; unset($_SESSION['invalidfile']);}
-  ?>
+		  
+   //Displaying empty upload status error message
+		  	 if(isset($_SESSION['nofile'])){echo $_SESSION['nofile'];
+											
+											//Unsetting error message
+											 unset($_SESSION['nofile']);
+											}
+		  
+		  
+		  ?>
 		
 		</td>
       <td>&nbsp;</td>
@@ -193,14 +207,14 @@ a:active {
 		
 		  
 		  
-		  <table width="600" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
+		  <table width="500" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
       <td>
 		  
 		  <!----------Form for photo upload starts here---------->
 		<form action="upload.php" method="post" enctype="multipart/form-data">
-		<table width="600" border="0" cellspacing="0" cellpadding="0">
+		<table width="500" border="0" cellspacing="0" cellpadding="0">
   <tbody>
 	  <tr>
 	  <td align="center">
@@ -255,16 +269,22 @@ a:active {
 		  <p></p>
 		  
 		
-		  
-		  <table width="600" border="1" cellpadding="0" cellspacing="0" bordercolor="lightgray" bordercellspacing="0">
+		  	<table width="500" cellpadding="0" cellspacing="0">
+	<tbody>
+		   <tr>
+		<td height="36" colspan="4" align="left">Pet details</td>
+		</tr>
+		   </tbody>
+	</table>
+		  <table width="500" border="1" cellpadding="0" cellspacing="0" bordercolor="lightgray" bordercellspacing="0">
   <tbody>
     <tr>
       <td>
-		
 				<!----------Form for pet details starts here---------->
 <form action="add_pet.php" method="post" name="form">
 		  
-		  <table width="600" border="0" cellspacing="0" cellpadding="0">
+	
+		  <table width="500" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
       <td width="122">Name</td>
@@ -316,7 +336,13 @@ a:active {
     <tr>
       <td>Age</td>
       <td>&nbsp;</td>
-      <td><input type="number" name="age"></td>
+      <td><input name="age" type="number" max="99" min="0">
+		<select name="timenoun">
+		  <option value="Months">Months</option>
+			<option value="Years">Years</option>
+		  </select>
+		
+		</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>

@@ -20,7 +20,7 @@ if($key == "formdata"){
 	//Posting fields from personal details form / sanitizing fields
 	$firstnameupdate = strip_tags($_POST['firstname']);
 	$lastnameupdate = strip_tags($_POST['lastname']);
-	$emailaddressupdate = strip_tags($_POST['email_address']);
+	$emailaddressupdate = strtolower(strip_tags($_POST['email_address']));
 	
 	//Checking if email address is associated with another account
     $check = "SELECT email_address FROM users WHERE email_address = ?";
@@ -218,11 +218,11 @@ a:active {
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
-      <td align="center"><h2>Lost Pet Connect</h2></td>
+      <td align="center"><h2><?php echo $website_title; ?></h2></td>
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td height="79">&nbsp;</td>
+      <td height="52">&nbsp;</td>
       <td align="center">&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
@@ -238,7 +238,7 @@ a:active {
 		  
 		  
 		
-		<table width="500" border="0" cellspacing="0" cellpadding="0">
+		<table width="450" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
       <td width="153"><h2>Settings</h2></td>
@@ -297,7 +297,7 @@ a:active {
 		  
 		  <!---------Start of personal details form--------->
 		  <form action="settings.php" method="post">
-		<table width="500" border="0" cellspacing="0" cellpadding="0">
+		<table width="450" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
 		<td>&nbsp;</td>
@@ -583,8 +583,14 @@ a:active {
     </tr>
     <tr>
       <td>&nbsp;</td>
+      <td colspan="2" align="left"><input type="hidden" name="formref" value="cp"><font color="lightgray"><small>6 Character minimum</small></font></td>
       <td>&nbsp;</td>
-      <td><input type="hidden" name="formref" value="cp"></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>

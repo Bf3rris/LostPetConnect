@@ -114,6 +114,7 @@ a:active {
 
 		<table width="500" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
   <tbody>
+	  
     <tr>
       <td>
 		
@@ -138,8 +139,8 @@ a:active {
 	  <table width='500' border='0' cellspacing='1' cellpadding='1'>
   <tbody>
 	<tr>
-      <td width='64'>&nbsp;</td>
-      <td width='436'>Name</td>
+      <td width='64'>Name</td>
+      <td width='436'>&nbsp;</td>
       <td width='200'>View</td>
     </tr>
 	  <tr>

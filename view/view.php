@@ -3,14 +3,15 @@
 //Starting user session
 session_start();
 
-//Starting mysql connection
+//Starting MySQL connection
 require('../connection.php');
 
-//Setting var/pet id retrieved from url
-$petid = strip_tags($_REQUEST['petid']);
+//Setting pet id var
+if(isset($_POST['petid'])){$petid = strip_tags($_REQUEST['petid']);}
 
-//request uri
+//Retrieving parameters from URL
 $uri = explode("=", $_SERVER['REQUEST_URI']);
+
 
 
 //Retrieving owners uid to use in following query / retrieving details from row to display on webview
@@ -26,11 +27,12 @@ if($stmt->execute()){$result = $stmt->get_result();
 					 $description = $fetch['description'];
 					 $gender = $fetch['gender'];
 					 $status = $fetch['status'];
+					 $status_date = $fetch['status_date'];
 					}
 
 $stmt->close();
 
-//Query for pet and user data
+//Querying db for pet and user data to display on webview
 $selection = "SELECT firstname, lastname, city, state, zip FROM users WHERE uid = ?";
 $stmt = $conn->prepare($selection);
 $stmt->bind_param('s', $uid);
@@ -45,12 +47,26 @@ if($stmt->execute()){$result = $stmt->get_result();
 					}
 $stmt->close();
 
+//Checking URL parameter for keyword to generate call code
 
+
+
+//If parameter 2 is set and == gencode a call code will be generated 
+//Ccall code is necessary for calls to be placed and directed
+
+if(isset($uri[2])){
 if($uri[2] == "gencode"){
+	
+	//Creating random 6 digit call code
 $code = str_shuffle(rand(111111, 999999));
+	
+	//Intentionally blank 
 $ph = "";
 
+//Setting date var to use for call log 
 $date = date("m-d-y");
+	
+	//Setting time var for use in call log
 	$time = date('h:i.s');
 $calllog = "INSERT INTO call_log (date, request_time, uid, from_number, code, pid, request_ip) VALUES (?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($calllog);
@@ -59,7 +75,7 @@ $stmt->execute();
 $stmt->close();
 }
 
-
+}
 //Site settings config ID
 $configid = "1";
 
@@ -84,7 +100,7 @@ $stmt->close();
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
-<title><?php echo $website_title; ?> - Lost Pet Connect</title>
+<title><?php echo "$website_title - $petname &middot; $city, $state"; ?> - Lost Pet Connect</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -115,7 +131,10 @@ a:active {
 	<table width='410' border='0' align='center' cellpadding='0' cellspacing='0' bgcolor='red'>
   <tbody>
     <tr>
-	  <td align='center'><font color='#ffffff'>This pet has been marked as lost by owners!</font></td>
+	  <td align='center'><h1><font color='#ffffff'>M I S S I N G!</font></h1></td>
+	  </tr>
+	  <tr>
+	  <td align='center'><font color='#ffffff'><strong>Last updated: $status_date</strong></font></td>
     </tr>
   </tbody>
 </table";
@@ -188,17 +207,10 @@ a:active {
   <tbody>
     <tr>
       <td width="87">&nbsp;</td>
-      <td width="55">&nbsp;</td>
-      <td width="100" align="center">&nbsp;</td>
+      <td width="55"></td>
+      <td width="100" align="center"></td>
       <td width="100">&nbsp;</td>
       <td width="55">&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td></td>
-      <td align="center"></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
     </tr>
   </tbody>
 </table>
@@ -313,7 +325,7 @@ a:active {
                               <td>&nbsp;</td>
                               <td colspan="3" rowspan="4" align="center"><a href="tel:+<?php echo $xfn; ?>"><img src="../images/call.png"></a></td>
                               <td>&nbsp;</td>
-                              <td colspan="2" rowspan="4" align="center"><a href="sms:+<?php echo $xfn; ?>?body=Your+pet+has+been+found:+<?php echo $uri[1];?><!>DoNotEditThisMsg<!>"><img src="../images/text.png"></a></td>
+                              <td colspan="2" rowspan="4" align="center"><a href="sms:+<?php echo $xfn; ?>?body=Your+pet+has+been+found:<?php echo $uri[1];?>"><img src="../images/text.png"></a></td>
                               </tr>
                             <tr>
                               <td>&nbsp;</td>
@@ -386,7 +398,7 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td><?php if($code != ""){echo $code;} ?></td>
+      <td><?php if(isset($code)){echo $code;} ?></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>

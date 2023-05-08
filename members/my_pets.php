@@ -24,10 +24,6 @@ if($stmt->execute()){$result = $stmt->get_result();
 					}
 $stmt->close();
 
-//Site settings config ID
-$configid = "1";
-
-
 
 ?>
 
@@ -35,7 +31,7 @@ $configid = "1";
 <html>
 <head>
 <meta charset="utf-8">
-<title><?php echo $website_title; ?>  - My Pets</title>
+<title><?php echo $website_title; ?> - My Pets</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -77,7 +73,7 @@ a:active {
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
-      <td align="center"><h2>Lost Pet Connect</h2></td>
+      <td align="center"><h2><?php echo $website_title; ?></h2></td>
       <td>&nbsp;</td>
     </tr>
     <tr>

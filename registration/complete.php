@@ -10,7 +10,7 @@ session_start();
 //Site settings config ID
 $configid = "1";
 
-//Query for site settings / title
+//Query for site settings 
 $settings_sql = "SELECT * FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
@@ -26,35 +26,44 @@ $stmt->close();
 
 
 
-//
+//Flag allowing completion of registration
 $_SESSION['complete'] = "cl";
 
-//Initial password reset column/key
-$recreq = sha1(rand(0000, 9999));
+//Initial password reset column (recreq) data
+$recreq = sha1(rand(000000, 999999));
 
 if($_SESSION['complete'] = "cl"){$action = "cl";}elseif($_POST['action'] = "cl"){$action = "cl";}else{}
 //
 if($action == "cl"){
 	
-	//Creates uid for database from email address
+	//Generating users UID
 	$uid = str_shuffle(substr(sha1($_SESSION['email_address']), 0, 15));
 
-	//Generating pet id (PID))
+	//Generating pet id
 	if(isset($_SESSION['petid'])){$pid = $_SESSION['petid'];}else{
 	$pid = substr(str_shuffle(md5(date('his'))), 0, 8);
 	}
 	
-	//Setting flag variable for registration completion / final must = 2
+	//Setting flag variable for registration completion / final value must = 2 to complete
 	$value = 0;
 	
 	//Setting registration date
 	$reg_date = date('m.d.y');
 
-	
-		if(is_null($_SESSION['email_address'])){header("location: index.php");}else{
+	//Checking if exmil exists in database / prevents duplicate entries if user goes back after completion
+	$row_count = "SELECT id FROM users WHERE email_address = ?";
+	$stmt = $conn->prepare($row_count);
+	$stmt->bind_param('s', $_SESSION['email_address']);
+	if($stmt->execute())$result = $stmt->get_result();
+	$num_rows = $result->num_rows;
+}
+$stmt->close();
+
+
+
+if(is_null($_SESSION['email_address'])){header("location: index.php");}else{
 
 //Inserting pet owners detaisl into table
-	
 $insertowner = "INSERT INTO users (uid, firstname, lastname, email_address, phone_number, password, city, state, zip, reg_date, recreq) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($insertowner);
 $stmt->bind_param('sssssssssss', $uid, $_SESSION['firstname'], $_SESSION['lastname'], $_SESSION['email_address'], $_SESSION['mobilenumber'], $_SESSION['password'], $_SESSION['city'], $_SESSION['state'], $_SESSION['zip'], $reg_date, $recreq);
@@ -65,7 +74,7 @@ if($stmt->execute()){$value = $value+1;
 					$default_image = $_SESSION['img'];
 					 }else{$default_image = $photo_dir."default_pic.png";}
 					 
-					 //Setting vars for form submission
+					
 					 
 					 //Default status of 1, status of 2 means pet is missing
 					 $status = "1";
@@ -73,15 +82,17 @@ if($stmt->execute()){$value = $value+1;
 					 //Intentionally empty for registration
 					 $status_date = "";
 //Inserting pet detaisl into table					 
-$insertpet = "INSERT INTO pets (pid, uid, name, age, description, image, gender, status, status_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$insertpet = "INSERT INTO pets (pid, uid, name, age, timenoun, description, image, gender, status, status_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmtt = $conn->prepare($insertpet);
-$stmtt->bind_param('sssssssss', $pid, $uid, $_SESSION['petname'], $_SESSION['petage'], $_SESSION['description'], $default_image, $_SESSION['petgender'], $status, $status_date);
+$stmtt->bind_param('ssssssssss', $pid, $uid, $_SESSION['petname'], $_SESSION['petage'], $_SESSION['timenoun'], $_SESSION['description'], $default_image, $_SESSION['petgender'], $status, $status_date);
 if($stmtt->execute()){$value = $value+1;}else{echo "There has been an error, return to registration <a href='registration.php'>Click Here</a>";}
 $stmtt->close();
 					 
+							
 					
-					
-					}else{echo "There has been an error, return to registration <a href='registration.php'>Click Here</a>";}
+					}else{
+	//Error message if insertion fails
+	echo "There has been an error, return to registration <a href='registration.php'>Click Here</a>";}
 $stmt->close();
 
 	//QR code generates if a value of 2 exists / completing registration.
@@ -92,7 +103,7 @@ if($value == 2){
 	$filename = $pid."-qr.png";
 	
 	//Generating QR code using Google Devs/Charts
-	$data = file_get_contents('https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.$domain."view/petid=".$pid);
+	$data = file_get_contents('https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.$domain."/view/petid=".$pid);
 	
 	//Storing QR code
 	file_put_contents("../".$qr_dir.$filename, $data);
@@ -102,7 +113,7 @@ if($value == 2){
 	
 	}
 
-	}
+	
 
 
 ?>

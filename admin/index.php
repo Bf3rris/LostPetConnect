@@ -1,10 +1,12 @@
 <?php
 
+//Starting MySQL connection
 require('../connection.php');
 
+//Starting user session
 session_start();
 
-
+//Grabbing website settings
 $configid = "1";
 $settings_sql = "SELECT * FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
@@ -68,13 +70,23 @@ a:active {
       <td height="22">&nbsp;</td>
       <td rowspan="6" align="center" valign="top">
 		<?php 
+		  
+		  //Login error message
 		 if(isset($_SESSION['loginerror'])){
 		  echo $_SESSION['loginerror'];
 		  unset($_SESSION['loginerror']);
 			 }
 		  
+		  //Password reset status message
+		   if(isset($_SESSION['passwordstatus'])){
+		  echo $_SESSION['passwordstatus'];
+		  unset($_SESSION['passwordstatus']);
+		  }
+		  
 		  ?>
 		  
+		  
+		  <!----------Begin login form----------->
 		<form action="authenticate.php" method="post">
 		<table width="500" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
   <tbody>
@@ -112,9 +124,6 @@ a:active {
     </tr>
   </tbody>
 </table>
-
-		
-		
 		
 		
 		</td>
@@ -122,7 +131,7 @@ a:active {
   </tbody>
 </table>
 		  </form>
-		
+		 <!----------End login form----------->
 		
 		
 		</td>
@@ -150,7 +159,9 @@ a:active {
     </tr>
   </tbody>
 </table>
-		
+		<center>
+<a href='forgot_password.php'>Forgot password?</a>		  
+</center>
 		</td>
     </tr>
   </tbody>

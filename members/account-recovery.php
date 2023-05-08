@@ -10,9 +10,8 @@ session_start();
 $_SESSION['recreq'] = strip_tags($_REQUEST['reqid']);
 
 
-
 //Selecting user via seession vars
-$sql = "SELECT * FROM users WHERE recreq = ?";
+$sql = "SELECT id FROM users WHERE recreq = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('s', $_SESSION['recreq']);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -22,8 +21,6 @@ if($stmt->execute()){$result = $stmt->get_result();
 					
 					}
 $stmt->close();
-
-
 
 
 
@@ -99,7 +96,7 @@ a:active {
     <tr>
       <td width="193">&nbsp;</td>
       <td width="306">&nbsp;</td>
-      <td width="536" align="center"><img src="../imgs/logo.jpg"></td>
+      <td width="536" align="center"><h2><?php echo $website_title; ?></h2></td>
       <td width="65">&nbsp;</td>
       <td width="400" align="right">&nbsp;</td>
       </tr>
@@ -171,10 +168,10 @@ a:active {
 		
 		<?php										   
 															   
-if ($_SESSION['recreq'] == ""){
+if(is_null($_SESSION['recreq'])){
 
 
-echo "sess is blank";
+echo "session is invalid";
 
 
 }elseif($match_result == 1){echo '

@@ -10,7 +10,7 @@ session_start();
 	if(isset($_SESSION['id'])){}else{header("location: index.php");}
 
 
-//Requesting / setting uid to interact with account
+//setting session uid
 if(isset($_REQUEST['uid'])){$_SESSION['uid'] = strip_tags($_REQUEST['uid']);}
 
 
@@ -173,12 +173,13 @@ if($phonecount > 0){
 $configid = "1";
 
 //Retrieving website title
-$settings_sql = "SELECT website_title FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title, domain FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
 					 $website_title = $array['website_title'];
+					 $domain = $array['domain'];
 					 
 					}
 $stmt->close();
@@ -279,7 +280,7 @@ a:active {
 
 		  
 		  
-		  
+		  //Displaying status of message for completion of renerating new qr code / new pet id
 		  if(isset($_SESSION['completestatus'])){echo $_SESSION['completestatus']; unset($_SESSION['completestatus']);}
 		  ?>
 		
@@ -573,26 +574,32 @@ a:active {
   <tbody>
 	  
 	   <tr>
-	  <td><strong>User pets</strong></td>
+	  <td><strong>Users pets</strong></td>
 	  </tr>
     <tr>
       <td> <table width="500" border="0" cellspacing="0" cellpadding="0">
   <tbody>
 	  
 	  <?php
+	  
+	  //Selecting all pets belonged to the uid
 	  $petlist = "SELECT * FROM pets WHERE uid = ?";
 	  $stmt = $conn->prepare($petlist);
 	  $stmt->bind_param('s', $_SESSION['uid']);
 	  if($stmt->execute()){$result = $stmt->get_result();
 						  
+						   //Row count of pets
 						  $count = $result->num_rows;
 						   
-						   if($count == 0){echo "user has no pets to display";}else{
+						   // If or if no pets associated with uid
+						   if($count == 0){echo "User has no pets to display.";}else{
 						  while($pets = $result->fetch_assoc()){
+							  
+							  if($pets['name'] == ""){$pets['name'] = "Incomplete draft";}
 							  
 			echo"
     <tr>
-      <td>$pets[name]</td><td><a href='print.php?petid=$pets[pid]'>Print QR Code</a></td><td><a href='generate_id.php?petid=$pets[pid]'>Generate new QR code</a></td>
+      <td>$pets[name]</td><td><a href='$domain/view/petid=$pets[pid]' target='_blank'>View</a> / <a href='qr.php?petid=$pets[pid]' target='_blank'>QR Code</a></td><td><a href='generate_id.php?petid=$pets[pid]'>Generate new QR code</a></td>
     </tr>";
 						  }}}
 	  ?>
@@ -620,8 +627,6 @@ a:active {
     </tr>
   </tbody>
 </table>
-
-		
 		</td>
     </tr>
   </tbody>

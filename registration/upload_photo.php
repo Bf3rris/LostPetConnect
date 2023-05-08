@@ -1,6 +1,6 @@
 <?php
 
-//Startinf MySQL connection
+//Starting MySQL connection
 require('../connection.php');
 
 //Starting user session
@@ -8,19 +8,20 @@ session_start();
 
 
 //$detailkey prevents form from being wiped during page changes
-
 if(isset($_POST['detailkey']) == true){$key = strip_tags($_POST['detailkey']);}else{$key = "unset";}
 if($key == "detail"){
 	
 	//Posting & sanitizing user input
 $_SESSION['petname'] = strip_tags($_POST['petname']);
 $_SESSION['petage'] = strip_tags($_POST['petage']);
+	$_SESSION['timenoun'] = strip_tags($_POST['timenoun']);
 $_SESSION['description'] = strip_tags($_POST['description']);
 $_SESSION['petgender'] = strip_tags($_POST['gender']);
 	
 //Checking for empty fields & returning to previous page with error message to complete empty field is detected
 if($_SESSION['petname'] == ""){$_SESSION['petnameerror'] = "Pet name can't be empty"; header("location: pet_details.php");}
 if($_SESSION['petage'] == ""){$_SESSION['petageerror'] = "Specify your pets age"; header("location: pet_details.php");}
+	if($_SESSION['timenoun'] == ""){$_SESSION['timenounerror'] == "Specify months/years"; header(";pcation: pet_details.php");}
 if($_SESSION['description'] == ""){$_SESSION['descriptionerror'] = "Enter a description of your pet"; header("location: pet_details.php");}
 if($_SESSION['petgender'] == ""){$_SESSION['petgendereerror'] = "You must specify a gender"; header("location: pet_details.php");}
 
@@ -115,8 +116,10 @@ a:active {
     <tr>
       <td>&nbsp;</td>
       <td align="center"> <?php
-		  if(isset($_SESSION['nofile'])){echo $_SESSION['nofile']; unset($_SESSION['nofile']);}
 		  
+		  //Displaying empty file error message if set / unsetting
+		  if(isset($_SESSION['nofile'])){echo $_SESSION['nofile']; unset($_SESSION['nofile']);}
+			//Displaing invalid file error message if set / unsetting  
 		  if(isset($_SESSION['invalidfile'])){echo $_SESSION['invalidfile']; unset($_SESSION['invalidfile']);}
 		  
 		  ?></td>
@@ -164,7 +167,7 @@ a:active {
 		  " width="250" height="250"></td>
     </tr>
     <tr>
-      <td height="45" align="center"><?php if(isset($_SESSION['img'])){echo "Photo can be changed in your account";}else{echo "<input type='file' name='photo' id='photo'>";} ?></td>
+      <td height="45" align="center"><?php if(isset($_SESSION['img'])){echo "<small>You can change this later.</small>";}else{echo "<input type='file' name='photo' id='photo'>";} ?></td>
     </tr>
     <tr>
       <td align="center"><input type="hidden" name="key" value="photo"></td>

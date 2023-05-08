@@ -19,7 +19,7 @@ if($stmt->execute()){$result = $stmt->get_result();
 					$data = $result->fetch_assoc();
 					 $firstname = $data['firstname'];
 					}
-
+$stmt->close();
 
 //Site settings config ID
 $configid = "1";
@@ -125,17 +125,18 @@ a:active {
 		
 		  
 		 
-		  //Counting # of users pets
+		  //Retrieving # of pets the user has
 		  $petcount = "SELECT pid FROM pets WHERE uid = ?";
 		  $stmt = $conn->prepare($petcount);
 		  $stmt->bind_param('s', $_SESSION['uid']);
 		  if($stmt->execute()){$result = $stmt->get_result();
 							   $count = $result->num_rows;
 							  }
-		  $stmt->close();
-							   if($count > 1){$noun = "pets";}else{$noun = "pet";}
+		  $stmt->close();		//Displaying singular or plural noun depending on how many pets are found
+							   if($count == 1){$noun = "pet";}elseif($count > 1){$noun = "pets";}else{$noun = "pet";}
 							   if($count < 0){
 								   
+								   //Message if user has no pets in database
 								   echo "You have no $noun in the database";}else{echo "You have $count $noun in the database";}
 		  
 		  ?>

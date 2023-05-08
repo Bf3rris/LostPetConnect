@@ -6,10 +6,10 @@ require('../connection.php');
 //Starting user session
 session_start();
 
-//Posting / sanitizing  email address of user
+//Posting / sanitizing  email address input
 $email = strip_tags($_POST['email']);
 	
-//Querying database to see if email address exists
+//Querying database to see if email address exists in database
 $query = "SELECT email_address FROM users WHERE email_address = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param('s', $email);
@@ -60,17 +60,9 @@ $recreq = str_shuffle(sha1(rand(11111111, 99999999)));
 //Link that is emailed to user to complete password recovery
 $reclink = $domain."/members/account-recovery.php?reqid=" . $recreq;
 
-//
-
-
-
 
 
 ?>
-
-
-
-
 
 
 
@@ -129,7 +121,7 @@ a:active {
     <tr>
       <td width="193">&nbsp;</td>
       <td width="306">&nbsp;</td>
-      <td width="536" align="center"><img src="../imgs/logo.jpg"></td>
+      <td width="536" align="center"><h2><?php echo $website_title; ?></h2></td>
       <td width="65">&nbsp;</td>
       <td width="400" align="right">&nbsp;</td>
       </tr>
@@ -197,11 +189,13 @@ a:active {
     <tr>
       <td align="center">
 		
-		<?php								 
+		<?php				
+		  
+		  
 	if (empty($email)){echo "Email can't be empty<br /><input type='button' value='Previous page' onclick='history.back()'>";}else{												
 															 if ($exists == 1){
 
-			//
+			//Updating user row with reset request code
 			$recreq_sql = "UPDATE users SET recreq = ? WHERE email_address = ?";
 			$stmt = $conn->prepare($recreq_sql);
 			$stmt->bind_param('ss', $recreq, $email);
@@ -213,6 +207,8 @@ a:active {
 
 echo "An email containing a password recovery link has been sent to your email address<br /><strong><i>$email</i></strong><p></p> Please check your Spam or Junk folder for this email.";
 
+																 
+//Email sent to user upon reset request
 $message = "
 A password recovery request has been submitted for this account.
 To continue with the process, click the following link:
@@ -226,7 +222,9 @@ If you did not initiate this password request, please contact support immediatel
 
 
 ";
-mail($email_address, '[$website_title] Your Password Request', $message, '',  '-fsupport@bferris.tv');
+//Mail call						
+mail($email_address, '[$website_title] Your Password Request', $message, '', "-f$support_email");
+
 }else{echo 
 																 "
 																 The email address entered <br /><strong><i>$email</i></strong><br />was not found.<br /><br /> Please check your email address and<br /> try again. <br />";

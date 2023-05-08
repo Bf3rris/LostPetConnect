@@ -195,10 +195,6 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td colspan="2">&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
       <td colspan="2" align="center"><?php
 		  //Displaying personal details update success message / unsetting message
 		  if(isset($_SESSION['update'])){echo $_SESSION['update']; unset($_SESSION['update']);}
@@ -219,9 +215,9 @@ a:active {
 		  
 
 		  ?>
-		
-		
-		</td>
+        
+        
+        </td>
       <td>&nbsp;</td>
     </tr>
     <tr>

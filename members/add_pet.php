@@ -11,15 +11,18 @@ session_start();
 $configid = "1";
 
 //Query for site settings
-$settings_sql = "SELECT website_title, domain, photo_dir, qr_dir FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title, domain FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
-$stmt->bind_param('s', $configid);
+$stmt->bind_param('i', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
+					 
+					 //Var holding site url
 					 $domain = $array['domain'];
-					 $photo_dir = $array['photo_dir'];
-					 $qr_dir = $array['qr_dir'];
+
 					}
 $stmt->close();
 
@@ -45,7 +48,7 @@ if(strip_tags($_POST['petid'] == "")){
 	$description = strip_tags($_POST['description']);
 	
 	//Using default image until user uploads personal photo
-	$default_image = $photo_dir."default_pic.png";
+	$default_image = "../images/images/default_pic.png";
 	
 	//Generating new petid
 	$pid = substr(str_shuffle(md5(date('his'))), 0, 8);
@@ -73,7 +76,7 @@ if(strip_tags($_POST['petid'] == "")){
 	$data = file_get_contents('https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.$domain."/view/petid=".$pid);
 						 
     //Storing QR code
-	file_put_contents("../".$qr_dir.$filename, $data);
+	file_put_contents("../images/qr/".$filename, $data);
 		
 		//Setting status message for successful completion of adding pet
 		$_SESSION['scstatus'] = "<font color='green'><strong>Pet was successfully added to My Pets.</strong></font>";
@@ -120,6 +123,7 @@ if(strip_tags($_POST['petid'] == "")){
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Add a New Pet</title>
 <style type="text/css">
@@ -152,19 +156,23 @@ a:active {
 	<table width="900" border="0" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
-      <td valign="top">
+      <td height="990" valign="top">
 		
 		<table width="900" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="126">&nbsp;</td>
-      <td width="712">&nbsp;</td>
-      <td width="62">&nbsp;</td>
-    </tr>
+      <td colspan="3">
+		
+		  		<?php require('top.php'); ?>
+
+		
+		
+		</td>
+      </tr>
     <tr>
-      <td height="50">&nbsp;</td>
-      <td align="center"><h2><?php echo $website_title; ?></h2></td>
-      <td>&nbsp;</td>
+      <td width="126" height="50">&nbsp;</td>
+      <td width="712" align="center"><h2><?php echo $website_title; ?></h2></td>
+      <td width="62">&nbsp;</td>
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
@@ -233,7 +241,7 @@ a:active {
 									   }else{
 			  
 			  //Displays default image if user photo doesn't exist
-			  echo "<img src='../$photo_dir/default_pic.png' width='150' height='150'>";}
+			  echo "<img src='../images/images/default_pic.png' width='150' height='150'>";}
 		  ?>
 			  </td>
       <td width="313">&nbsp;</td>
@@ -466,7 +474,6 @@ a:active {
 		
 		
 		</td>
-      <td height="990">&nbsp;</td>
     </tr>
     </tbody>
 </table>

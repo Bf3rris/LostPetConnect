@@ -30,6 +30,7 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - My Pets</title>
 <style type="text/css">
@@ -67,14 +68,17 @@ a:active {
 		<table width="900" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="126">&nbsp;</td>
-      <td width="712">&nbsp;</td>
-      <td width="62">&nbsp;</td>
-    </tr>
+      <td colspan="3">
+		  
+				<?php require('top.php'); ?>
+
+		
+		</td>
+      </tr>
     <tr>
-      <td height="50">&nbsp;</td>
-      <td align="center"><h2><?php echo $website_title; ?></h2></td>
-      <td>&nbsp;</td>
+      <td width="126" height="50">&nbsp;</td>
+      <td width="712" align="center"><h2><?php echo $website_title; ?></h2></td>
+      <td width="62">&nbsp;</td>
     </tr>
     <tr>
       <td height="50">&nbsp;</td>

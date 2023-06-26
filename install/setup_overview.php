@@ -14,7 +14,7 @@ if(strip_tags($_POST['formref'] == "ms")){
 	
 	
 //Checking for empty fields 
-if(empty($_SESSION['mysql_location']) || empty($_SESSION['database_name']) || empty($_SESSION['mysql_username']) || empty($_SESSION['mysql_password'])){$_SESSION['emptyinput'] = "All fields must be completed.";
+if(empty($_POST['mysql_location']) || empty($_POST['database_name']) || empty($_POST['mysql_username']) || empty($_POST['mysql_password'])){$_SESSION['emptyinput'] = "All fields must be completed.";
 
 //Redirecting back to proper page if empty fields exist
 header("location: mysql_setup.php"); exit;
@@ -41,13 +41,13 @@ if(mysqli_connect($mysql_location, $mysql_username, $mysql_password)){
 	$conn = mysqli_connect($mysql_location, $mysql_username, $mysql_password);
 	
 	//message upon sucessful mysql connection
-	echo "Successful connection to MySQL server. <br />";
+	echo "Connection to MySQL server: Successful <br />";
 	
 	//Attempt to select DB that tables will be created on
 	if(mysqli_select_db($conn, $_SESSION['database_name'])){
 		
 		//Displaying message upon successful selection of database
-		echo "Database selected, $_SESSION[database_name]<br />";
+		echo "Database selected: $_SESSION[database_name]: Successful<br />";
 	
 		
 			
@@ -72,18 +72,30 @@ PRIMARY KEY(id),
 email_address VARCHAR(32),
 password VARCHAR(40),
 recreq VARCHAR(40)
- ) ")){echo "Admin table sucessfully created. <br />";
+ ) ")){echo "Admin table creation: Successful <br />";
 	
 	$value = $value+1;
-	}else{echo "Admin table failed to create. Check MySQL user has 'CREATE' privilege and try again.<br />";}
+	}else{echo "<font color='#ff0000'><strong>Admin table creation: Failed</strong></font>. Check MySQL user has 'CREATE' privilege and try again.<br />";}
  		
 //Inserting admin user account into admin table
-		$admin_insert = "INSERT INTO admin (first_name, last_name, email_address, password,recreq) VALUES ('$_SESSION[firstname]', '$_SESSION[lastname]', '$_SESSION[email_address]', '$_SESSION[password]', '$recreq')";
-		if(mysqli_query($conn, $admin_insert)){echo "Admin user successfully created. <br />";
-											  $value = $value+1;
-											  }else{echo "Admin user failed to be created. Check MySQL user has 'INSERT' privilege and try again.<br />";}
-				
 		
+		//Query for existing admin user / if user partially completed install
+		require('../connection.php');
+		$row_count = "SELECT id FROM admin";
+		$stmt = $conn->prepare($row_count);
+		if($stmt->execute()){$result = $stmt->get_result();
+							$rowcount = $result->num_rows;
+							}
+		$stmt->close();
+		
+		//Function to insert admin user if there are none existing in database
+		if($rowcount != 0){echo "Admin user has already been created.";}else{
+		$admin_insert = "INSERT INTO admin (first_name, last_name, email_address, password, recreq) VALUES ('$_SESSION[firstname]', '$_SESSION[lastname]', '$_SESSION[email_address]', '$_SESSION[password]', '$recreq')";
+		if(mysqli_query($conn, $admin_insert)){echo "Admin user account creation: Successful <br />";
+											  $value = $value+1;
+											  }else{echo "<font color='#ff0000'><strong>Admin user account creation: Failed. </strong></font>Check MySQL user has 'INSERT' privilege and try again.<br />";}
+				
+		}
 //Creating users table
  if(mysqli_query($conn, "CREATE TABLE users(
 id INT NOT NULL AUTO_INCREMENT, 
@@ -98,11 +110,13 @@ city VARCHAR(32),
 state VARCHAR(3),
 zip VARCHAR(5),
 reg_date VARCHAR(24),
-recreq VARCHAR(40)
-) ")){echo "Users table successfully created. <br />";
+recreq VARCHAR(40),
+restricted LONGTEXT,
+call_out VARCHAR(13)
+) ")){echo "Users table creation: Successful <br />";
 	 $value = $value+1;
 	 
-	 }else{echo "Users table failed to create. Check MySQL user has 'CREATE' privilege and try again.<br />";}
+	 }else{echo "<font color='#ff0000'>'Users' table creation: Failed.</strong></font>Check MySQL user has 'CREATE' privilege and try again.<br />";}
 
 //Creating pets table
  if(mysqli_query($conn, "CREATE TABLE pets(
@@ -112,37 +126,49 @@ PRIMARY KEY(id),
  uid VARCHAR(40),
  name VARCHAR(24),
  age VARCHAR(3),
+timenoun VARCHAR(7),
  description VARCHAR(500),
  image VARCHAR(64),
  gender VARCHAR(7),
 status VARCHAR(1),
 status_date VARCHAR(16)
- ) ")){echo "Pets table successfully created. <br />";
+ ) ")){echo "Pets table creation: Successul. <br />";
 	  $value = $value+1;
-	  }else{echo "Pets table failed to create. Check MySQL user has 'CREATE' privilege and try again.<br />";}
+	  }else{echo "<font color='#ff0000'><strong>'Pets' table creation: Failed.</strong></font> Check MySQL user has 'CREATE' privilege and try again.<br />";}
 
-//Creating website settings table
+		//Creating website settings table
   if(mysqli_query($conn, "CREATE TABLE site_settings(
 id INT NOT NULL AUTO_INCREMENT, 
 PRIMARY KEY(id),
  website_title VARCHAR(64), 
- domain VARCHAR(32),
- support_email VARCHAR(32),
- photo_dir VARCHAR(64),
-qr_dir VARCHAR(64),
-xfn VARCHAR(11)
- ) ")){echo "Site_settings table successfully created. <br />";
+domain VARCHAR(32),
+support_email VARCHAR(32),
+composer_path VARCHAR(64),
+xfn VARCHAR(12),
+space_url VARCHAR(64),
+project_id VARCHAR(64),
+token VARCHAR(64)
+ ) ")){echo "'Site_settings' table creation: Successful<br />";
 	  $value = $value+1;
-	  }else{echo "Site_settings table failed to create. Check MySQL user has 'CREATE' privilege and try again.<br />";}
+	  }else{echo "<font color='#ff0000'><strong>'Site_settings' table creation: Failed</strong></font> Check MySQL user has 'CREATE' privilege and try again.<br />";}
 		
-		
+		//Checking for existing site settings config (usually if an incomplete install exists
+		$ssq = "SELECT id FROM site_settings";
+		$stmt = $conn->prepare($ssq);
+		if($stmt->execute()){$result = $stmt->get_result();
+							$ssqc = $result->num_rows;
+							}
+		$stmt->close();
+		if($ssqc != 0){echo "Site settings already exists.";}else{
 //Inserting website settings inputted during setup into table
-$site_settings = "INSERT INTO site_settings (website_title, domain, support_email, photo_dir, qr_dir, xfn) VALUES ('$_SESSION[website_title]', '$_SESSION[domain]', '$_SESSION[contact]', '$_SESSION[photo_dir]', '$_SESSION[qr_dir]', '$_SESSION[xfn]')";
-if(mysqli_query($conn, $site_settings)){echo "Website site settings successfully inserted into site_settings table. <br />";
+			
+			
+$site_settings = "INSERT INTO site_settings (website_title, domain, support_email,  composer_path, xfn, space_url, project_id, token) VALUES ('$_SESSION[website_title]', '$_SESSION[domain]', '$_SESSION[contact]', '$_SESSION[composer_path]', '$_SESSION[xfn]','$_SESSION[space_url]', '$_SESSION[pid]', '$_SESSION[token]')";
+if(mysqli_query($conn, $site_settings)){echo "'site_settings' data insertion: Successful <br />";
 									   
 									   $value = $value+1;
-									   }else{echo "Website settings failed to be inserted. Check MySQL user for 'INSERT' privilege.<br />";}
-
+									   }else{echo "<font color='#ff0000'><strong>'site_settings' data insertion: Failed.</strong></font> Check MySQL user for 'INSERT' privilege.<br />";}
+		}
 //Creating call log table
  if(mysqli_query($conn, "CREATE TABLE call_log(
 id INT NOT NULL AUTO_INCREMENT, 
@@ -150,49 +176,60 @@ PRIMARY KEY(id),
  date VARCHAR(18), 
  request_time VARCHAR(18),
  uid VARCHAR(20),
- from_number VARCHAR(12),
+out_id VARCHAR(64),
+from_number VARCHAR(13),
 code VARCHAR(8),
+call_id VARCHAR(50),
 pid VARCHAR(8),
-request_ip VARCHAR(18)
- ) ")){echo "Call log table successfully created.<br />";
+request_ip VARCHAR(18),
+ics VARCHAR(24),
+icamd VARCHAR(9),
+notes VARCHAR(200),
+tag VARCHAR(50)
+ ) ")){echo "Call log table creation: Successful<br />";
 	  
 	   $value = $value+1;
-	  }else{echo "Call_log table failed to create. Check MySQL user has 'CREATE' privilege and try again.<br />";}
+	  }else{echo "<font color='#ff0000'><strong>'Call_log' table creation: Failed.</strong></font> Check MySQL user has 'CREATE' privilege and try again.<br />";}
 
 //Creating message log table
  if(mysqli_query($conn, "CREATE TABLE message_log(
 id INT NOT NULL AUTO_INCREMENT, 
 PRIMARY KEY(id),
  mid VARCHAR(128), 
- locatorid VARCHAR(12),
+ from_number VARCHAR(13),
  uid VARCHAR(18),
  petid VARCHAR(8),
-body VARCHAR(320)
- ) ")){echo "Message log table successfully created. <br />";
+body VARCHAR(320),
+time VARCHAR(20),
+date VARCHAR(12),
+notes VARCHAR(200)
+ ) ")){echo "'Message_log' table creation: Successful <br />";
 	  
 	  $value = $value+1;
-	  }else{echo "Message_log table failed to create. Check MySQL user has 'CREATE' privilege and try again.<br />";}
-	
+	   
+	   if($value == "8"){echo "<strong>Setup has finished sucessfully.</strong>";}else{echo "There was an error during installation. This is due to your MySQL database.";}
+	  }else{echo "<font color='#ff0000'><strong>'Message_log' table creation: Failed.</strong></font> Check MySQL user has 'CREATE' privilege and try again.<br />";}
+	/*
 //creating .htaccess file / storing in 'view' directory
-$htaccess= "../view/.htaccess";
+$htaccess = "../view/.htaccess";
 $fh = fopen($htaccess, 'w') or die("Error creating htaccess file. Check user has proper 'write' permissions and try again.");
 fwrite($fh, 'RewriteEngine on'."\n");
 fwrite($fh, ''."\n");
 fwrite($fh, 'RewriteRule .* view.php');
 fclose($fh);
 	
-		
+	*/	
 		
 }else{
 		
 //if unsuccessful at selecting db
-echo "Unable to select database, $_SESSION[database_name]";}
+echo "<font color='#ff0000'><strong>Database selection: $_SESSION[database_name]: Failed.</strong></font> Check database exists <br />/ check MySQL user has has 'SELECT' privilege.";}
 	
 	
 }else{
 	
 	//If mysql connection is unsuccessful error message will generate
-	echo "Unable to establish MySQL connection";}
+	echo "<font color='#ff0000'><strong>MySQL database connection: Failed</strong></font>";}
 //mysqli_select_db($conn, $_SESSION['database_name']);
 	
 
@@ -202,6 +239,7 @@ echo "Unable to select database, $_SESSION[database_name]";}
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title>Lost Pet Connect - Registration</title>
 <style type="text/css">

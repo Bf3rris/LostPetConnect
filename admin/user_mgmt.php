@@ -18,6 +18,8 @@ $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
 					 
 					}
@@ -30,6 +32,7 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - User Management</title>
 <style type="text/css">
@@ -124,29 +127,36 @@ a:active {
 	  $list = "SELECT uid, firstname, lastname FROM users";
 	  $stmt = $conn->prepare($list);
 	  if($stmt->execute()){$result = $stmt->get_result();
+						   
+						   //Setting var with row count of registered users
 						   $user_count = $result->num_rows;
 						   
+						   //Message to be displayed to admin if no users are registered
 						   if($user_count == 0){echo "
 						   
 						   <center>
 						   There are no users to display
 						   </center>
-						   ";}else{
-						 while($data = $result->fetch_assoc()){
-						  
-						  
-	  echo "
-	  <table width='500' border='0' cellspacing='1' cellpadding='1'>
+						   ";}else{ echo"
+						   <table width='500' border='0' cellspacing='1' cellpadding='1'>
   <tbody>
 	<tr>
-      <td width='64'>Name</td>
+      <td width='64'><strong>Name</strong></td>
       <td width='436'>&nbsp;</td>
-      <td width='200'>View</td>
-    </tr>
+      <td width='200'><strong>Action</strong></td>
+    </tr>";
+						 while(
+							 
+							 
+							 //Data to display if registered user data exists in users table
+							 $data = $result->fetch_assoc()){
+							
+						  
+	  echo "
 	  <tr>
-      <td>&bull;</td>
-      <td>$data[lastname], $data[firstname]</td>
-      <td><a href='user_view.php?uid=$data[uid]'>View User</td>
+      <td>$data[firstname]</td>
+      <td>&nbsp;</td>
+      <td><a href='user_view.php?uid=$data[uid]'>View</td>
     </tr>";}}
 						  }
 		  ?>

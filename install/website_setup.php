@@ -4,9 +4,6 @@
 session_start();
 
 //Setting var so form doesn't get erased on form refreshes
-
-
-
 if(is_null($_POST['formref'])){}elseif(isset($_POST['formref'])){
 	if(strip_tags($_POST['formref'] == "as")){
 //Setting session variables  from field inputs / sanitizing data
@@ -18,12 +15,13 @@ $_SESSION['email_address'] = strtolower(strip_tags($_POST['emailaddress']));
 	if(empty($_SESSION['firstname']) || empty($_SESSION['lastname'])){$_SESSION['emptyinput'] = "All fields must be completed."; header("location: admin_setup.php"); exit;}
 	
 //Checking if password fields contains at least 6 chars
-if(strlen(strip_tags($_POST['password'])) < 6){$_SESSION['passwordlength'] = "Password must be 6 characters or more."; header("location: admin_setup.php"); exit;}
-if(strlen(strip_tags($_POST['confirmpassword'])) < 6){$_SESSION['passwordlength'] = "Password must be 6 characters or more/"; header("location: admin_setup.php"); exit;}
+if(strlen(strip_tags($_POST['password'])) < 6){$_SESSION['passwordlength'] = "Password must be at least 6 characters"; header("location: admin_setup.php"); exit;}
+if(strlen(strip_tags($_POST['confirmpassword'])) < 6){$_SESSION['passwordlength'] = "Password must be at least 6 characters"; header("location: admin_setup.php"); exit;}
 	
 
 //Setting & password vars / encrypting password
 $password = strip_tags(sha1($_POST['password']));
+$confirm_password = strip_tags(sha1($_POST['confirmpassword']));
 $confirm_password = strip_tags(sha1($_POST['confirmpassword']));
 
 	
@@ -60,6 +58,7 @@ if($value != 2){$_SESSION['emailinvalid'] = "Email address is invalid."; header(
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title>Lost Pet Connect - Installation Wizard [Website Setup]</title>
 <style type="text/css">
@@ -154,10 +153,10 @@ a:active {
 		<table width="500" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="37%">Domain URL</td>
-      <td width="2%">&nbsp;</td>
-      <td width="53%"><input type="text" name="domain" value="<?php if(isset($_SESSION['domain'])){echo $_SESSION['domain'];} ?>" size="24" maxlength="32"></td>
-      <td width="7%">&nbsp;</td>
+      <td width="26%">Domain URL</td>
+      <td width="6%">&nbsp;</td>
+      <td width="57%"><input type="text" name="domain" value="<?php if(isset($_SESSION['domain'])){echo $_SESSION['domain'];} ?>" size="24" maxlength="32"></td>
+      <td width="10%">&nbsp;</td>
       <td width="1%">&nbsp;</td>
     </tr>
     <tr>
@@ -210,98 +209,86 @@ a:active {
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td>Relay #:</td>
+      <td colspan="2"><strong>SignalWire Settings</strong></td>
       <td>&nbsp;</td>
-      <td><input type="tel" name="xfn" size="11" maxlength="11" value="<?php if(isset($_SESSION['xfn'])){echo $_SESSION['xfn'];}?>"></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2">&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td height="28">Phone number:</td>
+      <td>&nbsp;</td>
+      <td colspan="2"><input type="tel" name="xfn" size="12" maxlength="12" value="<?php if(isset($_SESSION['xfn'])){echo $_SESSION['xfn'];}?>">
+        <small>(Example: +12221234567)</small></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>Space URL</td>
+      <td>&nbsp;</td>
+      <td><input name="space_url" type="text" size="40" maxlength="64"></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
-      <td colspan="2"><small>(Example: 12221234567)</small></td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-		<td><small>Used as a proxy for calls and SMS.</small></td>
+      <td>(Example: username.signalwire.com)</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
+      <td height="28">Project ID</td>
       <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-		<td colspan="4"></td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td colspan="4"><u><strong>Storage directories</strong></u></td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td colspan="4">&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td><strong>Photo directory</strong></td>
-      <td>&nbsp;</td>
-      <td><input name="photo_dir" type="text" value="<?php if(isset($_SESSION['photo_dir'])){echo $_SESSION['photo_dir'];}else{echo "images/images/";}?>" size="24" maxlength="32"></td>
+      <td><input name="pid" type="text" size="40" maxlength="64"></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td colspan="3">Photo directory is used to store user uploaded images of pets.</td>
+      <td>Token</td>
+      <td>&nbsp;</td>
+      <td><input name="token" type="text" size="40" maxlength="64"></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
+		<td>(Note: Token starts with "<strong>PT</strong>")</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td><strong>QR code directory</strong></td>
+      <td colspan="4"></td>
       <td>&nbsp;</td>
-      <td><input name="qr_dir" type="text" size="24" maxlength="32" value="<?php if(isset($_SESSION['qr_dir'])){echo $_SESSION['qr_dir'];}else{echo "images/qr/";} ?>"></td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+      <td></td>
+      <td></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2">Path to Composer autoloader</td>
+      <td><input type="text" name="composer_path" value=""></td>
+      <td></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2">&nbsp;</td>
+      <td><small>(Example: '../vendor/autoload.php')<br />
+        </small></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
-      <td colspan="3">QR code storage location.</td>
+      <td><input type="hidden" name="formref" value="ws"></td>
       <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td><u><strong>*Note:</strong></u></td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td colspan="3"><input type="hidden" name="formref" value="ws">If no changes are made, the default directories that are pre-filled in each corresponding input field will be used.<br />These settings can be modified after installation if necessary.</td>
+      <td><small><strong>Note</strong>: Dependant files are located in the 'comm' directory.</small></td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>

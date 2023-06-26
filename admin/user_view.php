@@ -178,7 +178,11 @@ $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
+					 
+					 //Var holding site url
 					 $domain = $array['domain'];
 					 
 					}
@@ -189,8 +193,9 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
-<title><?php echo $website_title; ?> - Settings</title>
+<title><?php echo $website_title; ?> - Viewing User</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;

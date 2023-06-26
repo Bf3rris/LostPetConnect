@@ -16,10 +16,13 @@ $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding site url
 					 $domain = $array['domain'];
+					 
+					 //Var holding webite tile
 					 $website_title = $array['website_title'];
-					 $photo_dir = $array['photo_dir'];
-					 $qr_dir = $array['qr_dir'];
+					 
 					}
 $stmt->close();
 
@@ -72,7 +75,7 @@ if($stmt->execute()){$value = $value+1;
 					 //Checking for user uploaded photo / using default image if user doesn't upload photo
 					 if(isset($_SESSION['img'])){
 					$default_image = $_SESSION['img'];
-					 }else{$default_image = $photo_dir."default_pic.png";}
+					 }else{$default_image = "images/images/default_pic.png";}
 					 
 					
 					 
@@ -106,7 +109,7 @@ if($value == 2){
 	$data = file_get_contents('https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.$domain."/view/petid=".$pid);
 	
 	//Storing QR code
-	file_put_contents("../".$qr_dir.$filename, $data);
+	file_put_contents("../images/qr/".$filename, $data);
 }{
 	
 }
@@ -122,6 +125,7 @@ if($value == 2){
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Upload Photo</title>
 <style type="text/css">

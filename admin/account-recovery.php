@@ -28,11 +28,13 @@ $stmt->close();
 $configid = "1";
 
 //Query for site settings / title
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding wesite title
 					 $website_title = $array['website_title'];
 					 
 					}
@@ -44,6 +46,7 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Forgotten Password</title>
 <meta name="description" content="<?php echo $website_title; ?> - Reset your password and account support.">

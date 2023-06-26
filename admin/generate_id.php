@@ -11,16 +11,23 @@ if(isset($_SESSION['id'])){}else{header("location: index.php");}
 
 
 //Setting session var with pet id until removal occurs
-if(is_null($_SESSION['resetid'])){$_SESSION['resetid'] = strip_tags($_REQUEST['petid']);}
-//if($_SESSION['rmid'] == ""){header("location: dashboard.php");}
+if(isset($_SESSION['resetid'])){}else{$_SESSION['resetid'] = strip_tags($_REQUEST['petid']);}
+
+	
 //retrieving photo from db before deletion
 	$datareq = "SELECT uid, name, image FROM pets WHERE pid = ?";
 	$stmt = $conn->prepare($datareq);
 	$stmt->bind_param('s', $_SESSION['resetid']);
 	if($stmt->execute()){$result = $stmt->get_result();
 						$array = $result->fetch_assoc();
+						 
+						 //Var holding name of pet 
 						 $name = $array['name'];
+						 
+						 //Var holding directory location of image of pet
 						 $_SESSION['image'] = $array['image'];
+						 
+						 //Var holding uid of owner of pet
 						 $uid = $array['uid'];
 						}
 	$stmt->close();
@@ -33,22 +40,10 @@ if(isset($_POST['confirm'])){$confirm = strip_tags($_POST['confirm']);
 //Function to confirm removal set b
 if($confirm == "Yes"){
 	
-	$configid = "1";
-	$urlsql = "SELECT domain, photo_dir, qr_dir FROM site_settings WHERE id = ?";
-	$stmt = $conn->prepare($urlsql);
-	$stmt->bind_param('s', $configid);
-	if($stmt->execute()){$result = $stmt->get_result();
-					   $array = $result->fetch_assoc();
-					   $domain = $array['domain'];
-					   $qr_dir = $array['qr_dir'];
-						 $photo_dir = $array['photo_dir'];
-					   }
-	
-	$stmt->close();
 
 	
 	//unlink old qr code
-	unlink("../".$qr_dir.$_SESSION['resetid']."-qr.png");
+	unlink("../images/qr/".$_SESSION['resetid']."-qr.png");
 	
 	
 	//Generating new petid
@@ -59,11 +54,13 @@ if($confirm == "Yes"){
 	//getext
 	$ext = explode(".", $_SESSION['image']);
 	
-	//Renaming pet image filename to match new id
-		rename("../".$_SESSION['image'], "../".$photo_dir.$pid.".".$ext[1]);
+	//Var holding new filename of pets photo
+	$image = $pid.".".$ext[1];
 	
-	//setimage
-	$image = $photo_dir.$pid.".".$ext[1];
+	
+	//Renaming pet image filename to match new id
+		rename("../images/images/".$_SESSION['image'], "../images/images/".$pid.".".$ext[1]);
+	
 	
 	//Updating pet table with new pet id
 	$idupdate = "UPDATE pets SET pid = ?, image = ? WHERE pid = ?";
@@ -75,7 +72,7 @@ if($confirm == "Yes"){
 	$data = file_get_contents('https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.$domain."/view/petid=".$pid);
 	
 	//Storing new QR code
-	file_put_contents("../".$qr_dir.$pid."-qr.png", $data);
+	file_put_contents("../images/qr/".$pid."-qr.png", $data);
 		
 		
 		//Setting session var for update status
@@ -98,15 +95,21 @@ if($confirm == "Yes"){
 }
 }
 
-
+//Site settings config id
 $configid = "1";
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+
+//Selecting website title from seite settings table
+$settings_sql = "SELECT domain, website_title FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
-$stmt->bind_param('s', $configid);
+$stmt->bind_param('i', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
 					 
+					 //Var holding site url
+					 $domain = $array['domain'];
 					}
 $stmt->close();
 
@@ -118,9 +121,12 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
-<title><?php echo $website_title; ?> - Manage Pet / Remove Pet</title>
-<style type="text/css">
+	<title><?php echo $website_title; ?> - Manage Pet / Generate New Pet Identity</title>
+	
+	<style type="text/css">
+
 body,td,th {
 	font-family: Arial;
 }
@@ -140,6 +146,11 @@ a:hover {
 }
 a:active {
 	text-decoration: none;
+}
+</style>
+<style type="text/css">
+body,td,th {
+	font-family: Arial;
 }
 </style>
 </head>
@@ -191,7 +202,7 @@ a:active {
 	  
 	  
 	  <tr>
-	 <td>This feature will change the Pet ID and QR code associated with this pet: <i><strong><i><?php echo $name; ?></i></strong></td>
+	 <td>This feature will change the Pet ID and QR code associated with this pet. This will not delete images or user data.: <i><strong><i><?php echo $name; ?></i></strong></td>
 	  </tr>
     <tr>
       <td align="center">

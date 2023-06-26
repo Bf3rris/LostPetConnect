@@ -11,14 +11,17 @@ if(isset($_SESSION['id'])){}else{header("location: index.php");}
 
 
 //Setting session var with pet id until removal occurs
-if($_SESSION['rmid'] == ""){$_SESSION['rmid'] = strip_tags($_REQUEST['uid']);}
-//if($_SESSION['rmid'] == ""){header("location: dashboard.php");}
+if(isset($_SESSION['rmid'])){}else{$_SESSION['rmid'] = strip_tags($_REQUEST['uid']);}
+
 //retrieving photo from db before deletion
-	$imgreq = "SELECT firstname, email_address FROM users WHERE uid = ?";
+	$imgreq = "SELECT email_address FROM users WHERE uid = ?";
 	$stmt = $conn->prepare($imgreq);
 	$stmt->bind_param('s', $_SESSION['rmid']);
 	if($stmt->execute()){$result = $stmt->get_result();
-						
+						 
+						 $data = $result->fetch_assoc();
+						 
+						 //Var holding email address of user
 						 $email_address = $data['email_address'];
 						}
 	$stmt->close();
@@ -26,10 +29,10 @@ if($_SESSION['rmid'] == ""){$_SESSION['rmid'] = strip_tags($_REQUEST['uid']);}
 
 
 //Setting var to confirm action for pet removal
-$confirm = strip_tags($_POST['confirm']);
+//$confirm = strip_tags($_POST['confirm']);
 
 //Function to confirm removal set b
-if($confirm == "Yes"){
+if(isset($_POST['confirm'])){
 	
 	
 //retrieve pet data before deletion of user data
@@ -58,20 +61,13 @@ if($confirm == "Yes"){
 						 $_SESSION['removestatus'] = "<font color='green'>User has been removed</font>";
 						 
 						 
-						 //Deleting photo of pet from images directory
-						 //unlink($photo);
-							 
-							 //Deleting pets QR code from QR code directory
-							// unlink('../images/qr/'.$_SESSION['rmid']."-qr.png");
-									
-							 //Unsetting petid removal var
-						//unset($_SESSION['rmid']);
 		
-						//Redirecting user back to 'my pets' details page
 	}else{echo "there was an error deleting pet";}
 		$stmt->close();
 		unset($_SESSION['rmid']);
-						 header("location: user_mgmt.php");
+	
+				//Redirecting user back to 'my pets' details page
+				header("location: user_mgmt.php");
 
 						 exit;
 	
@@ -80,13 +76,17 @@ if($confirm == "Yes"){
 }
 
 
-
+//Site settings config id
 $configid = "1";
+
+//Selecting website title from site settings
 $settings_sql = "SELECT * FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
 					 
 					}
@@ -99,8 +99,9 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
-<title><?php echo $website_title; ?> - Manage Pet / Remove Pet</title>
+<title><?php echo $website_title; ?> - User Management / Remove User</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;

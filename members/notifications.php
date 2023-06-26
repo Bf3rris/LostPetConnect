@@ -6,29 +6,15 @@ require('../connection.php');
 //Starting user session
 session_start();
 
-
 //Directing to login if not logged in
-if(isset($_SESSION['id'])){}else{header("location: index.php");}
+if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 
 
-//Retrieve admin users basic personal details
-$retrieve = "SELECT first_name FROM admin WHERE id =?";
-$stmt = $conn->prepare($retrieve);
-$stmt->bind_param('s', $_SESSION['id']);
-if($stmt->execute()){$result = $stmt->get_result();
-					$data = $result->fetch_assoc();
-					 
-					 //Var holding admins first name
-					 $firstname = $data['first_name'];
-					}
-$stmt->close();
-
-
-//Site settings config id
+//Site settings config ID<h
 $configid = "1";
 
-//Query for site settings
-$settings_sql = "SELECT website_title FROM site_settings WHERE id = ?";
+//Query for site settings / title
+$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -40,6 +26,7 @@ if($stmt->execute()){$result = $stmt->get_result();
 					}
 $stmt->close();
 
+
 ?>
 
 <!doctype html>
@@ -47,7 +34,7 @@ $stmt->close();
 <head>
 			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
-<title><?php echo $website_title; ?> - Dashboard</title>
+<title><?php echo $website_title; ?> - Notifications</title>
 <style type="text/css">
 body,td,th {
 	font-family: Arial;
@@ -75,6 +62,8 @@ a:active {
 <body>
 	
 	
+	
+	
 	<table width="900" border="0" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
@@ -83,18 +72,41 @@ a:active {
 		<table width="900" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="126">&nbsp;</td>
-      <td width="712">&nbsp;</td>
+      <td colspan="3">
+		
+				<?php require('top.php'); ?>
+
+		  
+		
+		</td>
+      </tr>
+    <tr>
+      <td width="126" height="50">&nbsp;</td>
+      <td width="712" align="center"><h2><?php echo $website_title; ?></h2></td>
       <td width="62">&nbsp;</td>
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
-      <td align="center"><h2>Lost Pet Connect</h2></td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td height="50">&nbsp;</td>
-      <td align="center"><h3>Admin Dashboard</h3></td>
+      <td align="center">
+		
+		
+		<?php  
+		  
+		  //Display number block message if action performed
+		    if(isset($_SESSION['block'])){echo "Phone number has been blocked.<br />
+			
+			<strong><a href='settings.php'><u>View Restricted List</u></a></strong>
+			
+			";
+												  //Unsetting successful pet addition message
+												  unset($_SESSION['block']);
+		  
+		  }
+		  
+		  
+		  ?>
+		
+		</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -107,33 +119,39 @@ a:active {
 		</td>
       <td rowspan="2" align="center" valign="top">
 		
-		<table width="500" border="0" cellspacing="0" cellpadding="0">
+		<table width="650" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="250"><h2>Welcome,
-		  <?php
-		  
-		  //Greeting owner by firstname
-		  echo $firstname;
-		  
-		  ?>
-		  </h2></td>
-      <td width="118">&nbsp;</td>
-      <td width="132" align="center"><?php echo date('m.d.y'); ?></td>
+      <td width="146"><h2>Notifications</h2></td>
+      <td width="100">&nbsp;</td>
+      <td width="254" align="center">&nbsp;</td>
     </tr>
     <tr>
       <td colspan="3"><hr width="100%" color="lightgray"></td>
-      </tr>
-    <tr>
-      <td colspan="3">&nbsp;</td>
     </tr>
+	  <tr>
+	  <td colspan="3">View and manage notifications that appear when locators of your pet contact you.</td>
+	  </tr>
+	  <tr>
+		  <td><h3>Calls</h3></td>
+	    <td>&nbsp;</td>
+	    <td><h3>Text Messages</h3></td>
+	    </tr>
     <tr>
-      <td colspan="3">
+      <td colspan="2" align="left" valign="top">
+		<iframe src="call_log.php" width="310" frameborder="0"></iframe>
 		
-Use the navigation menu on the left to access the available administrative functions.
-		 
+		</td>
+      <td align="left" valign="top">
 		
-		
+		  <table width="300" border="0" cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td>
+        <iframe src="message_log.php" width="310" frameborder="0"></iframe></td>
+    </tr>
+  </tbody>
+</table>
 		
 		</td>
     </tr>

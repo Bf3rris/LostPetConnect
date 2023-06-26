@@ -33,6 +33,8 @@ $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
 					 
 					}
@@ -44,6 +46,7 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Forgotten Password</title>
 <meta name="description" content="<?php echo $website_title; ?> - Reset your password and account support.">

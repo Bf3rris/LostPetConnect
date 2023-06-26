@@ -7,7 +7,7 @@ require('../connection.php');
 session_start();
 
 //Posting / sanitizing  email address input
-$email = strip_tags($_POST['email']);
+$email = strip_tags($_POST['email']);<
 	
 //Querying database to see if email address exists in database
 $query = "SELECT email_address FROM admin WHERE email_address = ?";
@@ -32,7 +32,7 @@ $stmt->close();
 $configid = "1";
 
 //Query for site settingse
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title, domain, support_email FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('i', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -69,6 +69,7 @@ $reclink = $domain."/admin/account-recovery.php?reqid=" . $recreq;
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Forgotten Password</title>
 <meta name="description" content="<?php echo $website_title; ?> - Reset your password and account support.">

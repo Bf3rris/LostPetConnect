@@ -18,30 +18,70 @@ $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('i', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding SignalWire phone number
 					 $xfn = $array['xfn'];
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
+					 
+					 //Var holding site url
 					 $domain = $array['domain'];
+					 
+					 //Var holding support email contact
 					 $support_email = $array['support_email'];
+					 
+					 //Var holding composer autoload path
 					 $composer_path = $array['composer_path'];
+					 
+					 //Var holding SignalWire project ID
+					 $project_id = $array['project_id'];
+					 
+					 //Var holding SignalWire space URL
+					 $space_url = $array['space_url'];
+					 
+			
+					 //Var holding SignalWire auth token
+					 $auth_token = $array['token'];
 					 }
 
 //Key var prevents unintentional form submits 
 if(isset($_POST['formref'])){
 	
 //Posting / sanitizing site settings 
-	$fxfn = strip_tags($_POST['xfn']);
+	
+	//Updated SignalWire phone number
+	$fxfn = strip_tags($_POST['phone_number']);
+	
+	//Updated Website title
 	$fwt = strip_tags($_POST['website_title']);
+	
+	//Updated Website url
 $fdm = rtrim(strip_tags($_POST['domain']), "/");
-$fsc = strip_tags($_POST['support_email']);
+	
+	//Updated Email address used for client support
+$fsc = strtolower(strip_tags($_POST['support_email']));
+	
+	//Updated Composers autoload path
 $cp = strip_tags($_POST['composer_path']);
+	
+	//Updated SignalWire space URL
+	$surl = strtolower(strip_tags($_POST['space_url']));
+	
+	//Updated SignalWire project ID
+	$pi = strip_tags($_POST['project_id']);
+	
+	//Updated SignalWire auth token
+	$at = strip_tags($_POST['auth_token']);
 
-	if(empty($fxfn) || empty($fwt) || empty($fdm) || empty($fsc) || empty($cp)){$_SESSION['emptyinput'] = "All fields must be completed.";}
+	//Checking for empty variables from form submission with updated website/signalwire settings
+	if(empty($fxfn) || empty($fwt) || empty($fdm) || empty($fsc) || empty($cp) || empty($pi) || empty($surl) || empty($at)){$_SESSION['emptyinput'] = "All fields must be completed.";}
 	
 	
 	//Updating website settings row
-	$update_sql = "UPDATE site_settings SET website_title = ?, domain = ?, support_email = ?, composer_path = ?, xfn = ? WHERE id = ?";
+	$update_sql = "UPDATE site_settings SET website_title = ?, domain = ?, support_email = ?, composer_path = ?, xfn = ?, space_url = ?, project_id = ?, token = ? WHERE id = ?";
 	$stmt = $conn->prepare($update_sql);
-	$stmt->bind_param('sssssi', $fwt, $fdm, $fsc, $cp, $fxfn, $configid);
+	$stmt->bind_param('ssssssssi', $fwt, $fdm, $fsc, $cp, $fxfn, $space_url, $pi, $at, $configid);
 	if($stmt->execute()){
 		//Setting var for success message
 		$_SESSION['updatestatus'] = "<font color='green'><strong>Settings have been updated.</strong></font>";
@@ -66,6 +106,7 @@ $cp = strip_tags($_POST['composer_path']);
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Admin / Website Settings</title>
 <style type="text/css">
@@ -135,6 +176,12 @@ a:active {
               <td align="center">
                 
                 <?php
+				  
+				  //Displaying site settings update/failure message if exists
+		  if(isset($_SESSION['emptyinput'])){echo $_SESSION['emptyinput'];
+											  //Unsetting update/failure message
+											  unset($_SESSION['emptyinput']);}
+				  
 		  //Displaying site settings update/failure message if exists
 		  if(isset($_SESSION['updatestatus'])){echo $_SESSION['updatestatus'];
 											  //Unsetting update/failure message
@@ -173,56 +220,15 @@ a:active {
                     </tbody>
                   <tbody>
                     <tr>
-                      <td width="143"></td>
-                      <td width="117">&nbsp;</td>
-                      <td width="120">&nbsp;</td>
+                      <td width="143">&nbsp;</td>
+                      <td colspan="2"><strong><u>Website Settings</u></strong></td>
                       <td width="87">&nbsp;</td>
                       <td width="33">&nbsp;</td>
-                      </tr>
-                    <tr>
-                      <td></td>
-                      <td><u><strong>Proxy Phone Number</strong></u></td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      </tr>
-                    <tr>
-                      <td></td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      </tr>
-                    <tr>
-                      <td></td>
-                      <td><input type="tel" name="xfn" value="<?php echo $xfn; ?>" size="11" maxlength="11"></td>
-                      <td><small>(Ex. 12120004567)</small></td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      </tr>
-                    <tr>
-                      <td></td>
-                      <td colspan="2"><small>Number must be obtained from your SignalWire account.</small></td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      </tr>
-                    <tr>
-                      <td></td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      </tr>
+                    </tr>
                     <tr>
                       <td>&nbsp;</td>
-                      <td colspan="2"><strong><u>Website Settings</u></strong></td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      </tr>
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
+                      <td width="117">&nbsp;</td>
+                      <td width="120">&nbsp;</td>
                       <td>&nbsp;</td>
                       <td>&nbsp;</td>
                       </tr>
@@ -261,7 +267,7 @@ a:active {
                       </tr>
                     <tr>
                       <td>&nbsp;</td>
-                      <td colspan="3"><small>QR codes are generated using this domain / IP.</small></td>
+                      <td colspan="3"><small>Example: https://domain.com</small></td>
                       <td>&nbsp;</td>
                       </tr>
                     <tr>
@@ -292,7 +298,7 @@ a:active {
                       </tr>
                     <tr>
                       <td></td>
-                      <td colspan="2"><strong><u>Composer autoloader path</u></strong></td>
+                      <td colspan="2">Composer autoloader path</td>
                       <td>&nbsp;</td>
                       <td>&nbsp;</td>
                       </tr>
@@ -316,20 +322,102 @@ a:active {
                     </tr>
                     <tr>
                       <td>&nbsp;</td>
+                      <td colspan="2"><strong><u>SignalWire Settings</u></strong></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
                       <td colspan="2">&nbsp;</td>
                       <td>&nbsp;</td>
                       <td>&nbsp;</td>
                     </tr>
                     <tr>
                       <td>&nbsp;</td>
-                      <td colspan="2"><input type="hidden" name="formref" value="ss"></td>
-                      <td><input type="submit" value="Update Settings"></td>
+                      <td colspan="2">Phone number</td>
                       <td>&nbsp;</td>
-                      </tr>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><input name="phone_number" type="tel" value="<?php echo $xfn; ?>" maxlength="13"></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="3"><small>Example: +12223334567</small></td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="3">&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2">Space URL</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><input name="space_url" type="text" value="<?php echo $space_url; ?>" maxlength="60"></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><small>Example: username.signalwire.com</small></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
                     <tr>
                       <td>&nbsp;</td>
                       <td colspan="2">&nbsp;</td>
                       <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2">Project ID</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><input name="project_id" type="text" value="<?php echo $project_id; ?>" maxlength="60"></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2">&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2">Auth Token</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><input name="auth_token" type="text" value="<?php echo $auth_token; ?>" maxlength="60"></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><small>Example: PT*******</small></td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td colspan="2"><input type="hidden" name="formref" value="ss"></td>
+                      <td><input type="submit" value="Update Settings"></td>
                       <td>&nbsp;</td>
                       </tr>
                     </tbody>

@@ -11,18 +11,11 @@ session_start();
 $key = strip_tags($_POST['key']);
 
 
-//Query for photo directory
-$configid = "1";
-$dir_sql = "SELECT photo_dir FROM site_settings WHERE id = ?";
-$stmt = $conn->prepare($dir_sql);
-$stmt->bind_param('i', $configid);
-if($stmt->execute()){$result = $stmt->get_result();
-					$array = $result->fetch_assoc();
-					 $photo_dir = $array['photo_dir'];
+
+//Var holding directory path of user uploaded pet photos
+$photo_dir = "../images/images/";
 					
-					}
-$stmt->close();
-	
+
 //Generating pet id for newly created pet
 $_SESSION['petid'] = substr(str_shuffle(md5(date('his'))), 0, 8);
 
@@ -55,7 +48,7 @@ $filename = $_SESSION['petid'].".".$mime[1];
 
 
 //Storing uploaded image
-file_put_contents("../".$photo_dir.$filename, $contents);
+file_put_contents($photo_dir.$filename, $contents);
 
 
 //Var previously set to allow redirection upon successful upload

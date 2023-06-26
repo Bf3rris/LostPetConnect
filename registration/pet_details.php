@@ -151,6 +151,7 @@ if(empty($_SESSION['zip'])){$_SESSION['ziperror'] = "<font color='#ff0000'>Zip c
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Registration / Pet Details</title>
 <style type="text/css">

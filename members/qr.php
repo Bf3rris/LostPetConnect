@@ -10,21 +10,24 @@ $petid = strip_tags($_REQUEST['petid']);
 $configid = "1";
 
 //Query for website domain / title / qr code dir
-$settings_sql = "SELECT website_title, domain, qr_dir FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title, domain FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding site url
 					 $domain = $array['domain'];
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
-					 $qr_dir = $array['qr_dir'];
 					}
 $stmt->close();
 
 
 //Displaying QR code
 echo "
-<img src='$domain/$qr_dir$petid-qr.png'>
+<img src='$domain/images/qr/$petid-qr.png'>
 ";
 
 

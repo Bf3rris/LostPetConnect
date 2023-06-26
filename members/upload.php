@@ -29,8 +29,7 @@ $stmt->close();
 //Directing to login if not logged in
 if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 
-//Setting photo directory
-$dir = "../".$photo_dir;
+
 
 //Used to identify referring page (manage pet / add pet)
 $key = strip_tags($_POST['key']);
@@ -82,7 +81,7 @@ if(isset($_POST['id'])){}else{
 	$data = file_get_contents('https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.$domain."/view/petid=".$petid);
 	
 	//Storing QR code
-	file_put_contents("../".$qr_dir.$qrfilename, $data);
+	file_put_contents("../images/qr/".$qrfilename, $data);
 
 	
 	//Setting filename to use with image of pet
@@ -90,7 +89,7 @@ if(isset($_POST['id'])){}else{
 	
 	
 	//Storing pets photo
-	file_put_contents("../".$photo_dir.$photofilename, $contents);
+	file_put_contents("../images/images/".$photofilename, $contents);
 	
 	//Creating var to store image locaation in database
 	$dbfn = $photo_dir.$photofilename;
@@ -131,7 +130,7 @@ if(isset($_POST['id'])){}else{
 	$photofilename = $petid.".".$mime[1];
 	
 	//Creating var to set image location in DB
-	$dbfn = $photo_dir.$photofilename;
+	$dbfn = $photofilename;
 	
 	
 	//Retrieving photo name and location from database to remove previous pet image
@@ -148,12 +147,12 @@ if($stmt->execute()){$result = $stmt->get_result();
 	$stmt->close();
 	
 	//Deleting previous image file from directory / Prevents default photo from being deleted if in use by interacting pet
-	if($oldimage != $photo_dir."default_pic.png"){unlink("../".$oldimage);}
+	if($oldimage != "default_pic.png"){unlink("../".$oldimage);}
 
 	
 
 	//Storing photo of pet
-	file_put_contents("../".$photo_dir.$photofilename, $contents);
+	file_put_contents("../images/images/".$photofilename, $contents);
 	
 
 

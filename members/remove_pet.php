@@ -14,13 +14,14 @@ if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 $configid = "1";
 
 //Query for site settings
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
-					 $qr_dir = $array['qr_dir'];
 					 
 					}
 $stmt->close();
@@ -68,7 +69,7 @@ if($confirm == "Yes"){
 						 if($photo == "images/images/default_pic.png"){}else{unlink("../".$photo);}
 							 
 							 //Deleting pets QR code from QR code directory
-							 unlink("../".$qr_dir.$_SESSION['rmid']."-qr.png");
+							 unlink("../images/qr/q".$_SESSION['rmid']."-qr.png");
 									
 							 //Unsetting petid removal var
 						unset($_SESSION['rmid']);
@@ -94,6 +95,7 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Manage Pet / Remove Pet</title>
 <style type="text/css">
@@ -126,19 +128,22 @@ a:active {
 	<table width="900" border="0" align="center" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
-      <td valign="top">
+      <td height="990" valign="top">
 		
 		<table width="900" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="126">&nbsp;</td>
-      <td width="712">&nbsp;</td>
-      <td width="62">&nbsp;</td>
-    </tr>
+      <td colspan="3">
+		
+		  		<?php require('top.php'); ?>
+
+		
+		</td>
+      </tr>
     <tr>
-      <td height="50">&nbsp;</td>
-      <td align="center"><h2>Lost Pet Connect</h2></td>
-      <td>&nbsp;</td>
+      <td width="126" height="50">&nbsp;</td>
+      <td width="712" align="center"><h2>Lost Pet Connect</h2></td>
+      <td width="62">&nbsp;</td>
     </tr>
     <tr>
       <td height="50">&nbsp;</td>
@@ -225,7 +230,6 @@ a:active {
 	
 		
 		</td>
-      <td height="990">&nbsp;</td>
     </tr>
     </tbody>
 </table>

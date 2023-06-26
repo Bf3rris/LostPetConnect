@@ -11,13 +11,19 @@ session_start();
 $configid = "1";
 
 //Query for site settings / title
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title, support_email, domain FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
+					 
+					 //Var holding support email address to be used as sender of account recovery email
 					 $support_email = $array['support_email'];
+					 
+					 //Var holding url of site
 					 $domain = $array['domain'];
 					}
 $stmt->close();
@@ -30,8 +36,14 @@ $stmt = $conn->prepare($select);
 $stmt->bind_param('s', $_SESSION['recreq']);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //table id of admin user
 					 $id = $array['id'];
+					 
+					 //Verifying matching info
 					 $count = $result->num_rows;
+					 
+					 //Var holding email address of admin user
 					 $email_address = $array['email_address'];
 					}
 $stmt->close();
@@ -78,6 +90,7 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Forgotten Password</title>
 <meta name="description" content="<?php echo $website_title; ?> - Reset your password and account support.">

@@ -148,6 +148,7 @@ if($phonecount > 0){
 						 $city = $data['city'];
 						 $state = $data['state'];
 						 $zip = $data['zip'];
+						 $restricted_list = $data['restricted'];
 						 
 						}
 	
@@ -176,6 +177,7 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - My Settings</title>
 <style type="text/css">
@@ -212,14 +214,16 @@ a:active {
 		<table width="900" border="0" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
-      <td width="126">&nbsp;</td>
-      <td width="712">&nbsp;</td>
-      <td width="62">&nbsp;</td>
-    </tr>
+      <td colspan="3">
+		
+		<?php require('top.php'); ?>
+		
+		</td>
+      </tr>
     <tr>
-      <td height="50">&nbsp;</td>
-      <td align="center"><h2><?php echo $website_title; ?></h2></td>
-      <td>&nbsp;</td>
+      <td width="126" height="50">&nbsp;</td>
+      <td width="712" align="center"><h2><?php echo $website_title; ?></h2></td>
+      <td width="62">&nbsp;</td>
     </tr>
     <tr>
       <td height="52">&nbsp;</td>
@@ -266,6 +270,13 @@ a:active {
 		  		  if(isset($_SESSION['numberinuse'])){echo $_SESSION['numberinuse']; unset($_SESSION['numberinuse']);}
 
 		  if(isset($_SESSION['passwordmatch'])){echo $_SESSION['passwordmatch']; unset($_SESSION['passwordmatch']);}
+		  
+		  
+		  		  if(isset($_SESSION['restriction'])){echo $_SESSION['restriction']; unset($_SESSION['restriction']);}
+
+		  
+
+		  
 		  
 		  ?>
 		
@@ -538,11 +549,77 @@ a:active {
   </tbody>
 </table>
 		  
-		<table width="650" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
+		  
+		  
+		  <!---------------->
+		  
+		  <table width="650" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
   <tbody>
     <tr>
       <td>
 		  
+		  <!---------Start of password update form--------->
+		<form action="update_list.php" method="post">
+		<table width="650" border="0" cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td width="111">&nbsp;</td>
+      <td colspan="2"><strong><u>Restricted numbers</u></strong></td>
+      <td width="230">&nbsp;</td>
+      <td width="39">&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td colspan="3">Restricted numbers are unable to contact you via call or text message.</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td colspan="3" rowspan="3">
+		
+		<textarea name="restricted_list" cols="72" rows="8"><?php echo $restricted_list; ?></textarea>
+		
+		</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td colspan="3"><br />(example: +12223334567, +13334448901 (Include country code, separate by comma))</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td width="124"><input type="hidden" name="rl" value="rl"></td>
+      <td width="146">&nbsp;</td>
+      <td><input type="submit" name="submit" value="Update"></td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+		  </form>
+		<!---------End of personal details form--------->
+		</td>
+    </tr>
+  </tbody>
+</table>
+		  
+		  <p></p>
+		  <!----------------->
+		  
+		  
+		<table width="650" border="1" bordercolor="lightgray" cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td>
+		
 		  <!---------Start of password update form--------->
 		<form action="change_pass.php" method="post">
 		<table width="650" border="0" cellspacing="0" cellpadding="0">

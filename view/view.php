@@ -20,13 +20,29 @@ $stmt = $conn->prepare($owner);
 $stmt->bind_param('s', $uri[1]);
 if($stmt->execute()){$result = $stmt->get_result();
 					$fetch = $result->fetch_assoc();
+					 
+					 //Var holding pet owners uid
 					 $uid = $fetch['uid'];
+					 
+					 //Var holding pet name
 					$petname = $fetch['name'];
+					 
+					 //Var holding pet age
 					 $petage = $fetch['age'];
+					 
+					 //Var holding pet image path
 					 $image = $fetch['image'];
+					 
+					 //Var holding description of pet
 					 $description = $fetch['description'];
+					 
+					 //Var holding pet gender
 					 $gender = $fetch['gender'];
+					 
+					 //Var holding safety status safe (1) or missing (2) status
 					 $status = $fetch['status'];
+					 
+					 //Var holding missing status date
 					 $status_date = $fetch['status_date'];
 					}
 
@@ -39,16 +55,25 @@ $stmt->bind_param('s', $uid);
 if($stmt->execute()){$result = $stmt->get_result();
 
 					$data = $result->fetch_assoc();
+					 
+					 //Var holding first name of pet owner
 				$firstname = $data['firstname'];
+					 
+					 //Var holding last name of pet owner
 					 $lastname = $data['lastname'];
+					 
+					 //Var holding city location of pet owner
 					 $city = $data['city'];
+					 
+					 //Var holding state of pet owner
 					 $state = $data['state'];
+					
+					 //Var holding zip code of pet owner
 					 $zip = $data['zip'];
 					}
 $stmt->close();
 
 //Checking URL parameter for keyword to generate call code
-
 
 
 //If parameter 2 is set and == gencode a call code will be generated 
@@ -61,16 +86,18 @@ if($uri[2] == "gencode"){
 $code = str_shuffle(rand(111111, 999999));
 	
 	//Intentionally blank 
-$ph = "";
+$blank = "";
 
 //Setting date var to use for call log 
-$date = date("m-d-y");
+$date = date("m.d.y");
 	
 	//Setting time var for use in call log
 	$time = date('h:i.s');
-$calllog = "INSERT INTO call_log (date, request_time, uid, from_number, code, pid, request_ip) VALUES (?, ?, ?, ?, ?, ?, ?)";
+	
+	
+$calllog = "INSERT INTO call_log (date, request_time, uid, out_id, from_number, code, call_id, pid, request_ip, ics, icamd, notes, tag) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($calllog);
-$stmt->bind_param('sssssss', $date, $time, $uid, $ph, $code, $uri[1], $_SERVER['REMOTE_ADDR']);
+$stmt->bind_param('sssssssssssss', $date, $time, $uid, $blank, $blank, $code, $blank, $uri[1], $_SERVER['REMOTE_ADDR'], $blank, $blank, $blank, $blank);
 $stmt->execute();
 $stmt->close();
 }
@@ -85,7 +112,11 @@ $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding website title
 					 $website_title = $array['website_title'];
+					 
+					 //Var holding SignalWire phone number
 					 $xfn = $array['xfn'];
 					 
 					}
@@ -165,7 +196,7 @@ a:active {
               <td width="149" align="center">
                 
                 
-                <img src="../<?php echo $image; ?>" width="120" height="120">
+                <img src="../images/images/<?php echo $image; ?>" width="120" height="120">
                 </td>
               <td width="150" valign="top">
                 <table width="150" border="0" cellspacing="0" cellpadding="0">

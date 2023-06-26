@@ -8,6 +8,7 @@ session_start();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title>Welcome to Lost Pet Connect - Installation Wizard</title>
 <style type="text/css">
@@ -85,7 +86,7 @@ a:active {
       <td width="19">&nbsp;</td>
       <td width="105" align="center"><input type="button" value="Exit"></td>
       <td width="28">&nbsp;</td>
-      <td width="125" align="center"><a href="admin_setup.php"><input type="button" value="Begin Install"></a></td>
+      <td width="125" align="center"><a href="admin_setup.php"><input type="button" value="Begin Setup"></a></td>
       <td width="23">&nbsp;</td>
     </tr>
   </tbody>

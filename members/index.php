@@ -26,6 +26,7 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Owner Login</title>
 <style type="text/css">
@@ -66,7 +67,7 @@ a:active {
     <tr>
       <td width="150" height="50">&nbsp;</td>
       <td width="400" align="center"><h2><?php echo $website_title; ?> </h2>
-		<h3>Owner Login </h3></td>
+		<h3>Member Login </h3></td>
       <td width="150">&nbsp;</td>
     </tr>
     <tr>

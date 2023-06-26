@@ -11,15 +11,16 @@ if(isset($_POST['formref'])){
 $_SESSION['domain'] = strip_tags($_POST['domain']);
 $_SESSION['website_title'] = strip_tags($_POST['website_title']);
 $_SESSION['contact'] = strip_tags($_POST['contact']);
-$_SESSION['photo_dir'] = strip_tags($_POST['photo_dir']);
-$_SESSION['qr_dir'] = strip_tags($_POST['qr_dir']);
+		$_SESSION['composer_path'] = strip_tags($_POST['composer_path']);
 	$_SESSION['xfn'] = strip_tags($_POST['xfn']);
-	
+		$_SESSION['space_url'] = strip_tags($_POST['space_url']);
+	$_SESSION['pid'] = strip_tags($_POST['pid']);
+		$_SESSION['token'] = strip_tags($_POST['token']);
 	
 
 }
 //Checking for empty fields 
-if(empty($_SESSION['domain']) || empty($_SESSION['website_title']) || empty($_SESSION['contact']) || empty($_SESSION['photo_dir']) || empty($_SESSION['qr_dir'])){$_SESSION['emptyinput'] = "<font color='#ff0000'><strong>All fields must be completed.</strong></font>";
+if(empty($_SESSION['domain']) || empty($_SESSION['website_title']) || empty($_SESSION['contact']) || empty($_SESSION['composer_path']) || empty($_SESSION['pid']) || empty($_SESSION['token']) ||empty($_POST['space_url'])){$_SESSION['emptyinput'] = "<font color='#ff0000'><strong>All fields must be completed.</strong></font>";
 
 //redirecting back to proper page if empty fields exist
 header("location: website_setup.php"); exit;}
@@ -29,6 +30,7 @@ header("location: website_setup.php"); exit;}
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title>Lost Pet Connect - Installation Wizard [MySQL Setup]</title>
 <style type="text/css">
@@ -134,7 +136,7 @@ a:active {
     <tr>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
-      <td>Most commonly: '<em>localhost</em>'</td>
+      <td>Commonly: '<em>localhost</em>'</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr>

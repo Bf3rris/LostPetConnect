@@ -33,13 +33,15 @@ if($_SESSION['petgender'] == ""){$_SESSION['petgendereerror'] = "You must specif
 $configid = "1";
 
 //Query for site settings / title
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
-$stmt->bind_param('s', $configid);
+$stmt->bind_param('i', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+						
+						//Var holding wesite title
 					 $website_title = $array['website_title'];
-					 $photo_dir = $array['photo_dir'];
+					 
 					 
 					}
 $stmt->close();
@@ -50,6 +52,7 @@ $stmt->close();
 <!doctype html>
 <html>
 <head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="utf-8">
 <title><?php echo $website_title; ?> - Registration / Upload Photo</title>
 <style type="text/css">
@@ -163,7 +166,7 @@ a:active {
 		 <?php
 		  
 		  //Displays default image until user uploads personal photo
-		  if(isset($_SESSION['img'])){echo $_SESSION['img'];}else{echo "../".$photo_dir."default_pic.png";} ?>
+		  if(isset($_SESSION['img'])){echo $_SESSION['img'];}else{echo "../images/images/default_pic.png";} ?>
 		  " width="250" height="250"></td>
     </tr>
     <tr>

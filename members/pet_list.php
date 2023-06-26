@@ -35,7 +35,7 @@ if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 	<table width='300' border='0' cellspacing='0' cellpadding='0'>
   <tbody>
     <tr>
-      <td width='102' rowspan='3'><img src='../$data[image]' width='100' height='100' border='1'></td>
+      <td width='102' rowspan='3'><img src='../images/images/$data[image]' width='100' height='100' border='1'></td>
       <td width='15'>&nbsp;</td>
       <td width='400'>$data[name]</td>
     </tr>

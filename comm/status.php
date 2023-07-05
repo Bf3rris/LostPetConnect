@@ -1,20 +1,50 @@
 <?php
+require('../connection.php');
 
 
-require('vendor/autoload.php');
 
-	use SignalWire\Rest\Client;
-		
-	
-  $client = new Client("21a6a9d2-411f-43ca-aff7-8608e66f40e4", "PT4e8830a4c68a351df61924691b0ac27632ded267ea819be7", array("signalwireSpaceUrl" => "bf3rris.signalwire.com"));
+//Site settings config ID
+$configid = "1";
 
- $media = $client->messages("cab788fd-ae13-4e92-bfb6-3a39faf39a81")
-                  ->media
-                  ->read();
+//Query for site settings / title
+$settings_sql = "SELECT domain, composer_path FROM site_settings WHERE id = ?";
+$stmt = $conn->prepare($settings_sql);
+$stmt->bind_param('s', $configid);
+if($stmt->execute()){$result = $stmt->get_result();
+					$array = $result->fetch_assoc();
+					 
+					 //Var holding url of site
+					 $domain = $array['domain'];
+					 
+					 //Var holding composer autoload path
+					 $composer_path = $array['composer_path']; 
+					 
+					
+					}
+$stmt->close();
 
-  foreach ($media as $record) {
-      print($record->sid);
-  }
-	
 
+
+
+//Composers autoload
+require($composer_path);
+
+use \SignalWire\LaML\VoiceResponse;
+
+$response = new VoiceResponse;
+
+
+$callsid = $_POST['CallSid'];
+$callstatus = $_POrST['CallStatus'];
+
+if($_POST['CallStatus'] == "completed"){$answer = "0";}else{$answer = "1";}
+
+
+
+
+$sql = "UPDATE call_log SET active_call = ? WHERE call_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('ss', $answer, $callsid);
+$stmt->execute();
+$stmt->close();
 ?>

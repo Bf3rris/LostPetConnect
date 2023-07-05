@@ -9,7 +9,7 @@ body,td,th {
 require('../connection.php');
 
 //Start user session
-session_start();
+//session_start();
 
 echo"
 <table width='280' border='0' cellspacing='0' cellpadding='0' align='left'>
@@ -19,10 +19,15 @@ echo"
     </tr>
 	";
 
+
+//Var set to use users uid to pass to child page
+$child_id = strip_tags($_REQUEST['uid']);
+
+
 		//Selecting log id and pet id from message log to display data
 	  $message_log = "SELECT id, from_number, petid, time, date, notes FROM message_log WHERE uid = ?";
 	  $stmt = $conn->prepare($message_log);
-	  $stmt->bind_param('s', $_SESSION['uid']);
+	  $stmt->bind_param('s', $child_id);
 	  if($stmt->execute()){
 		  
 
@@ -30,7 +35,7 @@ echo"
 		  
 		  //Used to determine message to display for data/no data in logs
 		  $num_rows = $result->num_rows;
-		  if($num_rows < 1){
+		  if($num_rows == 0){
 			  
 			  
 			  		//Message displayed if no data is returned
@@ -41,7 +46,7 @@ echo"
 			  //Retrieve pets name and pet id
 			  $name_select = "SELECT name, pid FROM pets WHERE uid = ?";
 			  $stmt2 = $conn->prepare($name_select);
-			  $stmt2->bind_param('s', $_SESSION['uid']);
+			  $stmt2->bind_param('s', $child_id);
 			  if($stmt2->execute()){$result2 = $stmt2->get_result();
 								  $array2 = $result2->fetch_assoc();
 									

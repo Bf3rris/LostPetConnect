@@ -1,86 +1,111 @@
 <?php
 
+//Start mysqli connection
 require('../connection.php');
-require('vendor/autoload.php');
+
+
+//Site settings config ID
+$configid = "1";
+
+//Query for site settings / title
+$settings_sql = "SELECT domain, composer_path FROM site_settings WHERE id = ?";
+$stmt = $conn->prepare($settings_sql);
+$stmt->bind_param('s', $configid);
+if($stmt->execute()){$result = $stmt->get_result();
+					$array = $result->fetch_assoc();
+					 
+					 //Var holding site url
+					 $domain = $array['domain'];
+					 
+					 //Var holding composer autoload path
+					 $composer_path = $array['composer_path']; 	 
+
+					}
+$stmt->close();
+
+	//Composers autoload path
+	require($composer_path);
+
   use \SignalWire\LaML\VoiceResponse;
 
+	$response = new VoiceResponse;
+	
+	//Pet owners phone number
+	$to = strip_tags(substr($_POST['To'], 2));
 
-$response = new VoiceResponse;
 
-	$to = substr($_REQUEST['To'], 2);
-$digits = $_REQUEST['Digits'];
+
+	//Using pet owners phone number to tranlate to uid
+	$select_number = "SELECT uid FROM users WHERE phone_number = ?";
+	$stmt = $conn->prepare($select_number);
+	$stmt->bind_param('s', $to);
+	if($stmt->execute()){$result = $stmt->get_result();
+						$array = $result->fetch_assoc();
+						 
+						 //Var holding uid of pet owner
+						 $uid = $array['uid'];
+						}
+	$stmt->close();
+
+
+	//Digits received from call_action.php (1/accept or 2/decline)
+	$digits = strip_tags($_POST['Digits']);
 
 if($digits == "1"){
 	
 	
-	$response->say("You have pressed 1");
 
+	//active call status
+	$acs = "1";
 	
-//	$dial = $response->dial();
-//	$dial->queue($id, ['url' => 'http://13.59.192.46/x/establish.php']);
-
-	
-	//
-	
-	//
-	$select_number = "SELECT * FROM users WHERE phone_number = ?";
-	$stmt = $conn->prepare($select_number);
-	$stmt->bind_param('s', $to);
-	if($stmt->execute()){$result = $stmt->get_result();
-						$array = $result->fetch_assoc();
-						 $uid = $array['uid'];
-						}
-	$stmt->close();
-	
-	
-	$select_log = "SELECT * FROM call_log WHERE uid = ?";
+	//Selecting que name/id from call log where active caller is waiting
+	$select_log = "SELECT tag FROM call_log WHERE uid = ? AND active_call = ?";
 	$stmt = $conn->prepare($select_log);
-	$stmt->bind_param('s', $uid);
+	$stmt->bind_param('ss', $uid, $acs);
 	if($stmt->execute()){$result = $stmt->get_result();
 						$array = $result->fetch_assoc();
-						 $id = $array['note'];
-						 //$realid = $array['call_id'];
+						 
+						 //Var holding name/id of que for pet owner to answer
+						 $tag = $array['tag'];
 						}
 	$stmt->close();
 	
 	
 	
-	//
+	//Owner answers current call que
 	$dial = $response->dial();
-	$dial->queue($id, ['url' => 'http://13.59.192.46/x/establish.php']);
+	$dial->queue($tag, ['url' => $domain.'/comm/establish.php']);
+	
+	
+
+	
 	
 	
 }else{
+	//TTS played back to pet owner if they decline call from pet locator
+	$response->say("You have declined to answer the call. Good bye.");
 	
-	$response->say("You have pressed 2");
+
 	
-	
-	//
-	$select_number = "SELECT * FROM users WHERE phone_number = ?";
-	$stmt = $conn->prepare($select_number);
-	$stmt->bind_param('s', $to);
-	if($stmt->execute()){$result = $stmt->get_result();
-						$array = $result->fetch_assoc();
-						 $uid = $array['uid'];
-						}
-	$stmt->close();
-	
-	
-	$select_log = "SELECT * FROM call_log WHERE uid = ?";
+	//Selecting call id and que name from call log
+	$select_log = "SELECT call_id, tag FROM call_log WHERE uid = ? AND active_call = ?";
 	$stmt = $conn->prepare($select_log);
-	$stmt->bind_param('s', $uid);
+	$stmt->bind_param('ss', $uid, $acs);
 	if($stmt->execute()){$result = $stmt->get_result();
 						$array = $result->fetch_assoc();
-						 $id = $array['note'];
-						 $realid = $array['call_id'];
+						
+						 
+							//Var holding call id					 
+						 $call_id = $array['call_id'];
 						}
 	$stmt->close();
 	
 	
+	//If pet owner doesn't answer the locators call is updated with new XML informing of no contact made
+	$call = $client->calls($call_id)
+                 ->update(array("url" => "$domain/comm/no_answer.php"));
 	
-	//$response->redirect("http://13.59.192.46/x/call_direct.php");
-	$call = $client->calls($realid)
-                 ->update(array("url" => "http://13.59.192.46/x/no_answer.php"));
+	$response->hangup();
 	
 }
 

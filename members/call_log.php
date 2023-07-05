@@ -13,7 +13,7 @@ body,td,th {
 require('../connection.php');
 
 //Start user session
-session_start();
+//session_start();
 
 echo"
 <table width='280' border='0' cellspacing='0' cellpadding='0' align='left'>
@@ -22,20 +22,21 @@ echo"
       <td>&nbsp;</td>
     </tr>
 	";
-
+//Var set to use users uid to pass to child page
+$child_id = $_REQUEST['uid'];
 
 	  //Selecting call log data from db
-	  $call_log = "SELECT id, date, request_time, from_number, notes FROM call_log WHERE uid = ?";
+	  $call_log = "SELECT * FROM call_log WHERE uid = ?";
 	  $stmt = $conn->prepare($call_log);
-	  $stmt->bind_param('s', $_SESSION['uid']);
+	  $stmt->bind_param('s', $child_id);
 	  if($stmt->execute()){$result = $stmt->get_result();
 						   
 		  //Row count used to show message if data exists or not
 		  $num_rows = $result->num_rows;
 						   
 						   
-		  if($num_rows < 1){
-			  
+		  if($num_rows == 0){
+			  echo $num_rows;
 			  			//Message displayed if no call data is available
 			  echo "<tr><td>There are no calls to display.</td></tr>";}else{
 			  
@@ -47,7 +48,7 @@ echo"
 			    //Selecting pet details to use in call data
 			  $pn = "SELECT name, pid FROM pets WHERE uid = ?";
 			  $stmt2 = $conn->prepare($pn);
-			  $stmt2->bind_param('s', $_SESSION['uid']);
+			  $stmt2->bind_param('s', $child_id);
 			  if($stmt2->execute()){$result2 = $stmt2->get_result();
 								  $array2 = $result2->fetch_assoc();
 									

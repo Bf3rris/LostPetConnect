@@ -48,7 +48,7 @@ if(strip_tags($_POST['petid'] == "")){
 	$description = strip_tags($_POST['description']);
 	
 	//Using default image until user uploads personal photo
-	$default_image = "../images/images/default_pic.png";
+	$default_image = "default_pic.png";
 	
 	//Generating new petid
 	$pid = substr(str_shuffle(md5(date('his'))), 0, 8);

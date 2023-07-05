@@ -5,12 +5,13 @@ require('../connection.php');
 
 //Starting user session
 session_start();
+$sessionid = session_id();
 
 //Directing to login if not logged in
 if(isset($_SESSION['uid'])){}else{header("location: index.php");}
 
 
-//Site settings config ID<h
+//Site settings config ID
 $configid = "1";
 
 //Query for site settings / title
@@ -139,7 +140,7 @@ a:active {
 	    </tr>
     <tr>
       <td colspan="2" align="left" valign="top">
-		<iframe src="call_log.php" width="310" frameborder="0"></iframe>
+		<iframe src="call_log.php?uid=<?php echo $_SESSION['uid']; ?>" width="310" frameborder="0"></iframe>
 		
 		</td>
       <td align="left" valign="top">
@@ -148,7 +149,7 @@ a:active {
   <tbody>
     <tr>
       <td>
-        <iframe src="message_log.php" width="310" frameborder="0"></iframe></td>
+        <iframe src="message_log.php?uid=<?php echo $_SESSION['uid']; ?>" width="310" frameborder="0"></iframe></td>
     </tr>
   </tbody>
 </table>

@@ -1,235 +1,157 @@
 <?php
 
+
+//Starting MySQL connection
 require('../connection.php');
-require_once('vendor/autoload.php');
-$mxid = rand(1111,9999);
-$non = "1";
+
+//Site settings config ID
+$configid = "1";
+
+//Query for site settings / title
+$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$stmt = $conn->prepare($settings_sql);
+$stmt->bind_param('s', $configid);
+if($stmt->execute()){$result = $stmt->get_result();
+					$array = $result->fetch_assoc();
+					 
+					 //Var holding site url
+					 $domain = $array['domain'];
+					
+					 //Var holding composer autoload path
+					 $composer_path = $array['composer_path']; 
+
+					}
+$stmt->close();
+//Composers autoload
+require_once($composer_path);
+
 
 use \SignalWire\LaML\MessageResponse;
-
 $response = new MessageResponse;
 
 
-
-//retrieving message details
-$body = $_REQUEST['Body'];
-$mid = $_REQUEST['MessageSid'];
-$from = $_REQUEST['From'];
-$to = $_REQUEST['To'];
-
+//Requesting incoming message details
+$body = strtolower(strip_tags($_POST['Body']));
+$mid = strip_tags($_POST['MessageSid']);
+$from = strip_tags($_POST['From']);
+$to = strip_tags($_POST['To']);
 
 
-//
-$cid = substr($from, 2);
-$time = date('m-d-y / h:i');
-$rs = "2";
+//Inventionally empty var
+$blank = "";
 
 
+//Stripping first 2 characters of senders phone number to match to registered user
+$from_id = substr($from, 2);
 
-//check to see if number exists as a registered user
-$search = "SELECT * FROM users WHERE phone_number = ?";
+//Matching number to registered user
+$search = "SELECT uid FROM users WHERE phone_number = ?";
 $stmt = $conn->prepare($search);
-$stmt->bind_param('s', $cid);
+$stmt->bind_param('s', $from_id);
 if($stmt->execute()){
 	
-	$result = $stmt->get_result();
+$result = $stmt->get_result();
+	
+	
+	//Column count of registered user
+$reg_count = $result->num_rows;
+	
+if($reg_count == 0){
+	
+	/////unregistered phone number sstuff
+	
 
-
-//counting rows for result
-$countone = $result->num_rows;
-					}
-$stmt->close();
-
-
-
-//if phone number is registered
-if($countone == 1){
-	
-	
-	$array = $result->fetch_assoc();
-	$uid = $array['uid'];
-	
-	//checking for keywords
-	
-	
-	//if body contains accept
-	
-	
-	
-	if(strstr($body, "Accept")){$exploed = explode(" ", $body);
-							   
-							  //retrieving locatirid from id
-								$lid = "SELECT * FROM message_log WHERE id = ?";
-								$stmt = $conn->prepare($lid);
-								$stmt->bind_param('i', $exploed[1]);
-								if($stmt->execute()){$result = $stmt->get_result();
-													$array = $result->fetch_assoc();
-													 
-													$locatorid = $array['locatorid'];
-													
-													}
-							   $stmt->close();
-							   
-								$response->message('Locators phone number is:' . $locatorid);
-								header('content-type: text/xml');
-								echo $response->asXML();
-								
-								
-							   }
-	
-	
-	//if body contains stop
-	if(strstr($body, "Stop")){
+		//Checking for keywords from initial prefilled web link
+		if(strstr($body, "your")){
 		
-		
-		//Separate id
-	$stoptext = explode(" ", $body);
-		
-		//
-		$restrict = "2";
-		
-		
-		//select * from restricted
-		$grab = "SELECT * FROM users WHERE uid = ?";
-		$stmt = $conn->prepare($grab);
-		$stmt->bind_param('s', $uid);
-		if($stmt->execute()){$result = $stmt->get_result();
-							$array = $result->fetch_assoc();
-							 $restricted_list = $array['restricted'];
-							}
-		$stmt->close();
-		
-		
-		//Select locator id to block
-		$up = "SELECT * FROM message_log WHERE id = ?";
-		$stmt = $conn->prepare($up);
-		$stmt->bind_param('s', $stoptext[1]);
-		if($stmt->execute()){$result = $stmt->get_result();
-							$array = $result->fetch_assoc();
-							 $bid = $array['locatorid'];
-							}
-		$stmt->close();
-		
-		//add locator to restrcted list
-		$ul =  ",$bid,".$restricted_list;
-		
-		//updated restricted column
-	$stopsql = "UPDATE users SET restricted = ? WHERE uid = ?";
-		$stmt = $conn->prepare($stopsql);
-		$stmt->bind_param('ss', $ul, $uid);
-		$stmt->execute();
-		$stmt->close();
-		
-	}
-	
-}else{
-	
-	//if phone number is not registered
-	
-	
-	
-	
-	
-	
-	if(strstr($body, "Your")){
-		
-		
-		
-		//send message to owner
-		//translate pet it to owners phone number
-		
-		
-		//explode to get pet id
+			//Extracting pet id from initial located message
 		$explode = explode(":", $body);
 		
-		$missing = "2";
-		//retrieve owners uid from pet id
-		$retrieve = "SELECT * FROM pets WHERE pid = ? AND status = ?";
+		
+			//Translate pet id to the owners uid
+		$retrieve = "SELECT uid, name FROM pets WHERE pid = ?";
 		$stmt = $conn->prepare($retrieve);
-		$stmt->bind_param('si', $explode[1], $missing);
+		$stmt->bind_param('s', $explode[1]);
 		if($stmt->execute()){$result = $stmt->get_result();
 							$array = $result->fetch_assoc();
+							 
+							 //Var holding pet owners uid
 							 $uid = $array['uid'];
+							 
+							 //Var holding pets name
 							 $pet_name = $array['name'];
 							}
 		$stmt->close();
-		
-		//retrieve owners phone number
-		//checking for restrictions 
-		$pn = "SELECT * FROM users WHERE uid = ?";
+			
+			
+			
+			
+			
+		//Checking owners restricted phone number list to allow / block message
+		$pn = "SELECT phone_number, restricted FROM users WHERE uid = ?";
 		$stmt = $conn->prepare($pn);
 		$stmt->bind_param('s', $uid);
 		if($stmt->execute()){$result = $stmt->get_result();
 						   $array = $result->fetch_assoc();
+							 
+							 //Pet owners phone number
 							$phone_number = $array['phone_number'];
-							 $blockarray = $array['restricted'];
+							 
+							 //Array containing restricted phone numbers for this specific user
+							$blockarray = $array['restricted'];
 							}
 		$stmt->close();
-
-		
-$one = explode(",", $blockarray);
-		
-		if(in_array($from, $one)){
-							   
-							   
-							   //text response informing of being blocked
-								$response->message("how'd you do that?");
-								header("content-type: text/xml");
-								echo $response->asXML();
-							   
-							   }else{
-			
-			
-			//number isnt blocked
-			
-			
 		}
+	
+	if(strstr($blockarray, $from)){
+		
+		//If incoming # is on users restricted list
+		//reply is a notification of being blocked
+		
+		header("content-type: text/xml");
+		$response->message("You are not permitted to contact this user.");
+		echo $response->asXML();
+	
+	}else{
+		
+		//Var holding date incoming sms was received
+		$date = date('m.d.y');
+		
+		//Var holding time incoming sms was received
+		$time = date('h:i');
 		
 		
-		//insert message details into db
-		$blank = "";
-		 //
-							 $insert = "INSERT INTO message_log (id, mid, locatorid, uid, petid, body, time, status, locator_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		 //insert message details into db
+							 $insert = "INSERT INTO message_log (id, mid, from_number, uid, petid, body, time, date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 							 $stmt = $conn->prepare($insert);
-							 $stmt->bind_param('issssssis', $mxid, $mid, $from, $uid, $explode[1], $body, $time, $non, $blank);
+							 $stmt->bind_param('issssssss', $mxid, $mid, $from, $uid, $explode[1], $body, $time, $date, $blank);
 							 $stmt->execute();
 							 $stmt->close();
 		
 		
 		
-		//Send actual message to owner
+		//Sending message to owner of pet of location status and locators phone number
+		//2nd message assures locator that message has been received
+		echo "<Response>
 		
-		echo "<Response><Message to='+1$phone_number'>[Lost Pet Connect] $pet_name has been found!</Message>
-	
-		<Message to='+1$phone_number'>Reply 'Accept $mxid' to exchange contact info.</Message>
 		
-		</Response>";
-				
+		
+		<Message to='+1$phone_number'>[Lost Pet Connect] $pet_name has been located.</Message>
+		<Message to='+1$phone_number'>Locators #: $from</Message>
 
 		
-		//<Response><Message to='$from'>What is your name?</Message></Response>";
-	
-		
-		
+		<Message to='$from'>Thank you for your report! The owner has been notified. Please standby.</Message></Response>";
 		header("content-type: text/xml");
+		$response->asXML();
 		
-		//echo $response->asXML();
-		
-		
-
-		
-		
-
-		
+	}}else{
+	
+	//Simple reply with link to access account login if registered and uses 'help' keyword
+	
+	if(strstr($body, "help")){
+	header("content-type: text/xml");
+		$response->message("View your calls and text messages in detail online @ $domain/members");
+		echo $response->asXML();
 	}
-	
-	
-	
-	
-	
-	
-}
-
-
-
-?>
+}}
+		?>

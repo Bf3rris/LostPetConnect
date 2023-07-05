@@ -66,10 +66,10 @@ if($confirm == "Yes"){
 						 
 						 //Deleting photo of pet from images directory
 						 //Doing nothing if pets image is default image / prevents default image from being erased
-						 if($photo == "images/images/default_pic.png"){}else{unlink("../".$photo);}
+						 if($photo == "default_pic.png"){}else{unlink("../images/images/".$photo);}
 							 
 							 //Deleting pets QR code from QR code directory
-							 unlink("../images/qr/q".$_SESSION['rmid']."-qr.png");
+							 unlink("../images/qr/".$_SESSION['rmid']."-qr.png");
 									
 							 //Unsetting petid removal var
 						unset($_SESSION['rmid']);
@@ -191,7 +191,7 @@ a:active {
       </tr>
     <tr>
       <td width="29"><input type="hidden" name="complete" value="<?php if(isset($petid)){echo $petid;} ?>"></td>
-      <td width="124" align="center"><input type="hidden" name="petid" value="<?php if(isset($petid)){echo $petid;}?>"></td>
+      <td width="124" align="center"><input type="hidden" name="petid" value="<?php if(isset($_SESSION['rmid'])){echo $petid;}?>"></td>
       <td width="134" align="center"><input type="submit" name="confirm" value="Yes"></td>
 		<td width="135" align="center"><a href="my_pets.php"><input type="button" value="Cancel"></a></td>
       <td width="149">&nbsp;</td>

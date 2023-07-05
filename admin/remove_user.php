@@ -35,9 +35,39 @@ if(isset($_SESSION['rmid'])){}else{$_SESSION['rmid'] = strip_tags($_REQUEST['uid
 if(isset($_POST['confirm'])){
 	
 	
-//retrieve pet data before deletion of user data
-	
-	
+	//Retrieve pet data (pet id)  before deletion of user data / used to remove images of pet
+	$pet_data = "SELECT * FROM pets WHERE uid = ?";
+	$stmt = $conn->prepare($pet_data);
+	$stmt->bind_param('s', $_SESSION['rmid']);
+	if($stmt->execute()){$result = $stmt->get_result();
+						while($array = $result->fetch_assoc()){
+							
+							//Var holding pet id
+							$pid = $array['pid'];
+							
+							//Var holding image filename of pet
+							$photo = $array['image'];
+							
+						
+						 //Deleting photo of pet from images directory
+						 //Doing nothing if pets image is default image / prevents default image from being erased
+						 if($photo == "default_pic.png"){}else{unlink("../images/images/$photo");}
+							 
+							 //Deleting pets QR code from QR code directory
+							 unlink("../images/qr/$pid-qr.png");
+									
+						//Unsetting uid of interacting user
+						unset($_SESSION['rmid']);
+		
+							
+							
+						
+							
+						}
+						 
+						 
+						}
+	$stmt->close();
 	//Removing all pet data
 	
 	
@@ -80,7 +110,7 @@ if(isset($_POST['confirm'])){
 $configid = "1";
 
 //Selecting website title from site settings
-$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$settings_sql = "SELECT website_title FROM site_settings WHERE id = ?";
 $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();

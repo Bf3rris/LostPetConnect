@@ -16,12 +16,7 @@ if($stmt->execute()){$result = $stmt->get_result();
 					 
 					 //Setting domain var for use url in QR code creation
 					 $domain = $array['domain'];
-					 
-					 //Setting photo dir var for storing pet photo
-					 $photo_dir = $array['photo_dir'];
-					 
-					 //Setting qr code dir for storing QR code
-					 $qr_dir = $array['qr_dir'];
+					
 					}
 $stmt->close();
 
@@ -92,7 +87,7 @@ if(isset($_POST['id'])){}else{
 	file_put_contents("../images/images/".$photofilename, $contents);
 	
 	//Creating var to store image locaation in database
-	$dbfn = $photo_dir.$photofilename;
+	$dbfn = $photofilename;
 	
 	//Inputs that are completed by the user later
 	$placeholder = "";
@@ -109,7 +104,7 @@ if(isset($_POST['id'])){}else{
     $stmt->close();
 	
 	//Used to display uploaded image on add pet page
-	$_SESSION['imgplc'] = $photo_dir.$photofilename;
+	$_SESSION['imgplc'] = "../images/images/".$photofilename;
 	
 	//Saving session var for use on 'add pet' page
     $_SESSION['pid'] = $petid;
@@ -147,7 +142,7 @@ if($stmt->execute()){$result = $stmt->get_result();
 	$stmt->close();
 	
 	//Deleting previous image file from directory / Prevents default photo from being deleted if in use by interacting pet
-	if($oldimage != "default_pic.png"){unlink("../".$oldimage);}
+	if($oldimage == "default_pic.png"){}else{unlink("../images/images/".$oldimage);}
 
 	
 

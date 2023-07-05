@@ -75,7 +75,7 @@ if($stmt->execute()){$value = $value+1;
 					 //Checking for user uploaded photo / using default image if user doesn't upload photo
 					 if(isset($_SESSION['img'])){
 					$default_image = $_SESSION['img'];
-					 }else{$default_image = "images/images/default_pic.png";}
+					 }else{$default_image = "default_pic.png";}
 					 
 					
 					 

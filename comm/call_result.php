@@ -3,9 +3,6 @@
 //Starting MySQL connection
 require('../connection.php');
 
-//Compsoers autoload
-require_once 'vendor/autoload.php';
-
 //Site settings config ID
 $configid = "1";
 
@@ -15,14 +12,31 @@ $stmt = $conn->prepare($settings_sql);
 $stmt->bind_param('s', $configid);
 if($stmt->execute()){$result = $stmt->get_result();
 					$array = $result->fetch_assoc();
+					 
+					 //Var holding site url
 					 $domain = $array['domain'];
 					 
+					 //Var holding composer autoload path
+					 $composer_path = $array['composer_path']; 
+					 
+					 //Var holding SignalWire space url
+					 $space_url = $array['space_url'];
+					 
+					 //Var holding SignalWire phone number
+					 $xfn = $array['xfn'];
+					 
+					 //Var holding SignalWire project id
+					$project_id = $array['project_id'];
+
+					 //Var holding SignalWire auth token
+					 $token = $array['token'];
+
 					}
 $stmt->close();
 
+//Composers autoload path
+require_once($composer_path);
 
-//Setting date var / <h4>use</h4>d for database call_log data
-$date = date('m-d-y');
 
 use \SignalWire\LaML\VoiceResponse;
 use SignalWire\Rest\Client;
@@ -30,19 +44,20 @@ use SignalWire\Rest\Client;
 
 $response = new VoiceResponse;
 
-$callsid = $_REQUEST['CallSid'];
-$from = $_REQUEST['From'];
+//Setting var for call sid
+$callsid = strip_tags($_POST['CallSid']);
 
-
+//Var containing locators phone number
+$from = strip_tags($_POST['From']);
 
 //Posting caller id number of locator of pet
-$digits = $_REQUEST['Digits'];
+$digits = strip_tags($_POST['Digits']);
 
-//Verifying call code is in database and call is received during the window
+//Verifying call pin is exists in db 
 //Call PIN aides in routing call to owner and prevents unwanted calls from being received by pet owner
-$cc = "SELECT code FROM call_log WHERE date = ? AND code = ?";
+$cc = "SELECT * FROM call_log WHERE code = ?";
 $stmt = $conn->prepare($cc);
-$stmt->bind_param('ss', $date, $digits);
+$stmt->bind_param('s', $digits);
 if($stmt->execute()){$result = $stmt->get_result();
 		
 	     //Variable containing nuber result of match
@@ -57,7 +72,7 @@ if($count != "0"){
 	//Updating call log with phone number of caller
 	$updatesql = "UPDATE call_log SET from_number = ?, call_id = ? WHERE code = ?";
 	$stmt = $conn->prepare($updatesql);
-	$stmt->bind_param('sss', $_REQUEST['From'], $callsid, $digits);
+	$stmt->bind_param('sss', $from, $callsid, $digits);
 	$stmt->execute();
 	$stmt->close();
 
@@ -85,7 +100,9 @@ $stmt->close();
 	
 	
 //Response if query can't be matched
-if($count == "0"){$response->say('There seems to be a problem with your call code, please try again.');}else{
+if($count == "0"){$response->say('There seems to be a problem with your call code, please try again.');
+				 $response->redirect("$domain/comm/call.php");
+				 }else{
 
 	//Retrieving uid of pet owner to use to retrieve phone number to connect call to
 $petid = "SELECT uid FROM pets WHERE pid = ?";
@@ -101,8 +118,8 @@ if($stmt->execute()){$result = $stmt->get_result();
 					}
 $stmt->close();
 	
-//Selecting pet owners phone number to place call to
-$owner = "SELECT phone_number FROM users WHERE uid = ?";
+//Selecting pet owners phone number to place call to / checking restricted list column
+$owner = "SELECT phone_number, restricted FROM users WHERE uid = ?";
 $stmt = $conn->prepare($owner);
 $stmt->bind_param('s', $uid);
 if($stmt->execute()){$result = $stmt->get_result();
@@ -112,34 +129,38 @@ if($stmt->execute()){$result = $stmt->get_result();
 					 //Setting var holding pet owners phone number
 					 $number = $data['phone_number'];
 					
+					 //Restricted phone number column
+					 $restricted = $data['restricted'];
 					}
 $stmt->close();
-	//header('content-type: text/xml');
-	//Placing call to owner of pet
-	
-	$one = "SELECT id FROM call_log WHERE from_number = ?";
-	$stmt = $conn->prepare($one);
-	$stmt->bind_param('s', $from);
-	if($stmt->execute()){$result = $stmt->get_result();
-						$array = $result->fetch_assoc();
-						 
-						 //Setting var to use as name of queue
-						 $idd = $array['id'];
-						}
-	$stmt->close();
 	
 	
-	///Start call to pet owner
+	////if incoming # is contained within restricted column call will be answered and caller notified
+
+	if(strstr($restricted, $from)){
+		
+		header("content-type: text/xml");
+		$response->say("You are not permitted to contact this customer").
+			$response->say("Thank you for using Lost Pet Connect, goodbye.");
+		$response->hangup();
+		echo $response->asXML();
+		
+		
+		
+	}else{
+	
 	
 	
 
 	
-  $client = new Client('21a6a9d2-411f-43ca-aff7-8608e66f40e4', 'PT4e8830a4c68a351df61924691b0ac27632ded267ea819be7', array("signalwireSpaceUrl" => "bf3rris.signalwire.com"));
+	///Start call to pet owner
+	//Starting client
+  $client = new Client($project_id, $token, array("signalwireSpaceUrl" => "$space_url"));
 
   $call = $client->calls
                  ->create("+1".$number, // to
-                          "+19374539293", // from
-                          array("url" => "http://13.59.192.46/x/call_direct.php",
+                          "$xfn", // from
+                          array("url" => "$domain/comm/call_direct.php",
 							   "MachineDetection" => "Enable",
 								"AsyncAmd" => "true",
 								"Timeout" => 27,
@@ -148,69 +169,70 @@ $stmt->close();
 
 							   )
                  );
+	
+	//Var containing outgoing call sid
 	$cidd = $call->sid;
-	$out_id_update = "UPDATE call_log SET out_id = ? WHERE from_number = ?";
+	
+	//Updating call_log / updating out_id column with call sid of outgoing call to pet owner
+	$out_id_update = "UPDATE call_log SET out_id = ? WHERE from_number = ? AND code = ?";
 	$stmt = $conn->prepare($out_id_update);
-	$stmt->bind_param('ss', $cidd, $from);
+	$stmt->bind_param('sss', $cidd, $from, $digits);
 	$stmt->execute();
 	$stmt->close();
- // print($call->sid);
 
 	
 	
-	
+	//Var containing call sid
 	$cid = $call->sid;
+		
+		
+		
+
+		$hash = explode('-', strip_tags($_POST['CallSid']));
+		
+		//Var setting name of wait queue
+		$queue_name = "$uid-$hash[1]";
 	
-	
-	$one = "UPDATE call_log SET note = ? WHERE uid = ?";
+	//Updating call log with call sid  and queue name () / used to check status of call
+	$one = "UPDATE call_log SET tag = ? WHERE uid = ? AND code = ?";
 	$stmt = $conn->prepare($one);
-	$stmt->bind_param('ss', $cid, $uid);
+	$stmt->bind_param('sss', $queue_name, $uid, $digits);
 	$stmt->execute();
 						 
 	$stmt->close();
 	
-	/////end call to pet owner
-	
-
-	//setting queue name
-	$qqn = str_shuffle((date('his')));
 	
 	
-	//update db with queue id
-	$idupdate = "UPDATE call_log SET note = ? WHERE from_number = ?";
-	$stmt = $conn->prepare($idupdate);
-	$stmt->bind_param('ss', $qqn, $from);
-	$stmt->execute();
-	$stmt->close();
+	
+		
 
 	
-	//Adding caller to queue 
-	$response->enqueue($qqn,array('waitUrl' => 'http://13.59.192.46/x/wait.php'));
+	//Adding caller to queue to wait for pet owner to answer
+	$response->enqueue($queue_name,array('waitUrl' => $domain.'/comm/wait.php'));
 	
 	
-	//Played after other party disconnects
-//	$response->redirect($domain."/x/call.php");
 	
-	
-	//Plays if owner disconnects from call first
+		
+		
+			
+		
+		
+	//Locator hears TTS if pet owner owner disconnects from call first
 $response->say('Thank you for using Lost Pet Connect');
-	
-//header("content-type: text/xml");
-	//echo 
-		//"<Response>
-	//	<Enqueue waitUrl='http://13.59.192.46/x/12.php'>$idd</Enqueue></Response>";
-	
+$response->hangup();
+
+
 echo $response->asXML();
 	
 	
-}
+	}}
 }else{
 	
 	//Notifying caller of incorrect call code being provided
 	$response->say("The PIN that you've provided is invalid. Please try again.");
 	
 	//Redirecting caller to main menu to retry call code input
-	$response->redirect($domain."/x/call.php");
+	$response->redirect($domain."/comm/call.php");
 	echo $response->asXML();
 }
 ?>

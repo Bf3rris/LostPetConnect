@@ -185,7 +185,8 @@ request_ip VARCHAR(18),
 ics VARCHAR(24),
 icamd VARCHAR(9),
 notes VARCHAR(200),
-tag VARCHAR(50)
+tag VARCHAR(50),
+active_call VARCHAR(1)
  ) ")){echo "Call log table creation: Successful<br />";
 	  
 	   $value = $value+1;

@@ -166,7 +166,7 @@ a:active {
 		 <?php
 		  
 		  //Displays default image until user uploads personal photo
-		  if(isset($_SESSION['img'])){echo $_SESSION['img'];}else{echo "../images/images/default_pic.png";} ?>
+		  if(isset($_SESSION['img'])){echo "../images/images/$_SESSION[img]";}else{echo "../images/images/default_pic.png";} ?>
 		  " width="250" height="250"></td>
     </tr>
     <tr>

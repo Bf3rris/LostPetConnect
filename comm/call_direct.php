@@ -1,42 +1,77 @@
 <?php
 
 require('../connection.php');
-require('vendor/autoload.php');
 
+
+//Site settings config ID
+$configid = "1";
+
+//Query for site settings / title
+$settings_sql = "SELECT * FROM site_settings WHERE id = ?";
+$stmt = $conn->prepare($settings_sql);
+$stmt->bind_param('s', $configid);
+if($stmt->execute()){$result = $stmt->get_result();
+					$array = $result->fetch_assoc();
+					 
+					 //Var holding site url
+					 $domain = $array['domain'];
+					 
+					 //Var holding composer autoload path
+					 $composer_path = $array['composer_path']; 
+					 
+					 //Var holding SignalWire space url
+					 $space_url = $array['space_url'];
+					 
+					 //Var holding SignalWire phone number
+					 $xfn = $array['xfn'];
+					 
+					 //Var holding SignalWire project id
+					$project_id = $array['project_id'];
+
+					 //Var holding SignalWire auth token
+					 $token = $array['token'];
+
+					}
+$stmt->close();
+
+//Composer autoload path
+require($composer_path);
 
 use \SignalWire\LaML\VoiceResponse;
 use SignalWire\Rest\Client;
 
+//Starting client
+$client = new Client($project_id, $token, array("signalwireSpaceUrl" => "$space_url"));
 
-$client = new Client('21a6a9d2-411f-43ca-aff7-8608e66f40e4', 'PT4e8830a4c68a351df61924691b0ac27632ded267ea819be7', array("signalwireSpaceUrl" => "bf3rris.signalwire.com"));
+//Removing first to characters from number
+$var = strip_tags(substr($_POST['To'], 2));
 
+//Var holding call sid of incoming call
+$call_sid = strip_tags($_POST['CallSid']);
 
-$var = substr($_REQUEST['To'], 2);
-$thisid = $_REQUEST['CallSid'];
-
-
- $call = $client->calls($thisid)
+//Checking status of call to pet owner
+ $call = $client->calls($call_sid)
                  ->fetch();
 							   
-                 
+ //Phone call answered by (huan or machine) to pet owner
  $status = $call->answeredBy;
-$other = $call->status;
 
-//Blank var
-$blnk = "";
 
-//Updating to clear amd for repeat calls
+//Intentionally blank var
+$blank = "";
+
+//Updating call log to clear AMD data for future calls
 $clear = "UPDATE call_log SET icamd = ? WHERE out_id = ?";
 $stmt = $conn->prepare($clear);
-$stmt->bind_param('ss', $blnk, $thisid);
+$stmt->bind_param('ss', $blank, $call_sid);
 $stmt->execute();
 $stmt->close();
 
 
-//used in datadabase during call to check if call was picke up by robot or human
+//Used in datadabase during call to check if call was picke up by robot or human
 $update = "UPDATE call_log SET icamd = ? WHERE out_id = ?";
 $stmt = $conn->prepare($update);
-$stmt->bind_param('ss', $status, $thisid);
+$stmt->bind_param('ss', $status, $call_sid);
 $stmt->execute();
 $stmt->close();
 
@@ -44,31 +79,33 @@ $stmt->close();
 
 $response = new VoiceResponse;
 
-			///*******start section to control call if answered by-
+			
+//If call is answered by machine, locator directed to new xml saying so
+//This method prevents uninentional waiting and voicemails from occurring
 
 if($status == "machine"){
 	
-	$call = $client->calls($thisid)
-                 ->update(array("url" => "http://13.59.192.46/x/no_answer.php"));
+	//Updating call with 'no answer' XML
+	$call = $client->calls($call_sid)
+                 ->update(array("url" => "$domain/comm/no_answer.php"));
 
 }
 
 
 	
-	////**************
+//Gather of information
 $gather = $response->gather(array(
-'action' => 'http://13.59.192.46/x/call_action.php',
+'action' => $domain.'/comm/call_action.php',
 	'input' => 'dtmf',
 	'timeout' => 10,
 	'method' => 'POST',
 	'numDigits' => 1));
 
-//////
 
-
+//Greeting owner of pet and prompting possible actions
 $gather->say('Hello from Lost Pet Connect');
 	$gather->say("You are receiving a call from a locator of your pet.");
-$gather->say('Press 1 to accept the call and be connected or press 2 to decline the call.');
+$gather->say('Press 1 to accept the call and be connected or press 2 or simply hangup to decline the call.');
 
 
 

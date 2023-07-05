@@ -9,12 +9,7 @@ session_start();
 //Flag / var allows image upload to complete and user to be directed
 //back to proper page after image upload
 $key = strip_tags($_POST['key']);
-
-
-
-//Var holding directory path of user uploaded pet photos
-$photo_dir = "../images/images/";
-					
+	
 
 //Generating pet id for newly created pet
 $_SESSION['petid'] = substr(str_shuffle(md5(date('his'))), 0, 8);
@@ -48,7 +43,7 @@ $filename = $_SESSION['petid'].".".$mime[1];
 
 
 //Storing uploaded image
-file_put_contents($photo_dir.$filename, $contents);
+file_put_contents("../images/images/".$filename, $contents);
 
 
 //Var previously set to allow redirection upon successful upload
@@ -57,7 +52,7 @@ if($key == "photo"){
 	$_SESSION['regx'] = "yes";
 	
 	//Session var containing image location to view on final registration page
-	$_SESSION['img'] = "../".$photo_dir.$filename;
+	$_SESSION['img'] = $filename;
 	
 	//Session var set so registration can complete
 	$_SESSION['complete'] = "cl";

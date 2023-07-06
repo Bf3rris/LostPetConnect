@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  lamp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8081:80
+    volumes:
+      - ./website:/var/www/html
+      - ./apache.conf:/etc/apache2/sites-available/000-default.conf
+      - ./config.inc.php:/etc/phpmyadmin/config.inc.php
+    depends_on:
+      - mysql
+      - phpmyadmin
+    environment:
+      - SIGNALWIRE_PHONE_NUMBER=
+      - SIGNALWIRE_PROJECT_ID=
+      - SIGNALWIRE_AUTH_TOKEN=
+      - SIGNALWIRE_SPACE_URL=
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8082:80
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - PMA_ARBITRARY=1
+    depends_on:
+      - mysql

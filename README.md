@@ -66,8 +66,21 @@ Open: The 'view' directory and rename the file 'htaccess.txt' to '.htaccess'.<p>
 B.<br />
 A call to Google API to generate a QR code is made each time a user registers a pet to their account. Make sure your servers settings are set appropriately.<br />
 (function: file_get_contents("https://chart.googleapis.com/chart")...)<p>
+
+C.<br />
+Docker Environment Variables<br />
+Edit these variables from within the Docker compose (YAML) file and replace with your own.<br />
+
+SIGNALWIRE_PHONE_NUMBER=<br />
+SIGNALWIRE_PROJECT_ID=<br />
+SIGNALWIRE_AUTH_TOKEN=<br />
+SIGNALWIRE_SPACE_URL=<br />
+MYSQL_ROOT_PASSWORD=<p>
+
 5.<br />
 Phone Number Settings<br />
+
+
 
 <b>Edit these settings from within your SignalWire account</b>
 
@@ -105,3 +118,6 @@ domain.com/registration<p>
 
 User Login<br />
 domain.com/members
+
+<b>Contributing</b>
+Feel free to contact me at bf3rris@gmail.com if you have any bug reports or would like to contribute to this project.
